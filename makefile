@@ -6,7 +6,11 @@ OS_NAME := moss
 BUILDDIR := build
 ISO := $(BUILDDIR)/bin/$(OS_NAME).iso
 
+ASSEMBLER := nasm
 NASMFLAGS := -F dwarf -g -f elf64
+FASMFLAGS :=
+
+ASMFLAGS := $(NASMFLAGS)
 
 CFLAGS := \
     -Wall \
@@ -29,7 +33,8 @@ CFLAGS := \
 	-MMD \
 	-MP \
 	-nostdinc \
-	-Isrc \
+  	-Isrc \
+	-Iinclude \
 	-Iextern
 
 LDFLAGS =         			\
@@ -44,7 +49,7 @@ LDFLAGS =         			\
 
 QEMUFLAGS := -smp 2 -m 2G -monitor stdio -serial file:moss.log -vga std
 
-CFILES := $(shell find ./src -type f -name "*.c")
+CFILES := $(shell find ./src -type f -name "*.c") extern/flanterm/flanterm.c extern/flanterm/backends/fb.c
 ASMFILES := $(shell find ./src -type f -name "*.asm")
 OBJS := $(addprefix $(BUILDDIR)/obj/,$(CFILES:.c=.c.o) $(ASMFILES:.asm=.asm.o))
 
@@ -106,16 +111,22 @@ $(BUILDDIR)/bin/$(OS_NAME).elf: $(OBJS)
 	$(LD) $(LDFLAGS) $^ -o $@ 
 
 # Compilation rules for *.c files.
-$(BUILDDIR)/obj/./src/%.c.o: src/%.c src/bootloader/limine.h
+$(BUILDDIR)/obj/extern/%.c.o: extern/flanterm src/bootloader/limine.h
+	@/usr/bin/printf "[\033[1;35mKernel\033[0m] \033[32mCompiling \033[33m$<\n\033[0m"
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -c $(shell echo "$@" | sed 's/build\/obj\///g' | sed 's/\.o//g') -o $@
+
+# Compilation rules for *.c files.
+$(BUILDDIR)/obj/./src/%.c.o: src/%.c extern/flanterm src/bootloader/limine.h
 	@/usr/bin/printf "[\033[1;35mKernel\033[0m] \033[32mCompiling \033[33m$<\n\033[0m"
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Compilation rules for *.asm (nasm) files.
+# Compilation rules for *.asm (fasm) files.
 $(BUILDDIR)/obj/%.asm.o: %.asm
 	@/usr/bin/printf "[\033[1;35mKernel\033[0m] \033[32mAssembling \033[33m$^\n\033[0m"
 	@mkdir -p $(dir $@)
-	nasm $(NASMFLAGS) $< -o $@
+	$(ASSEMBLER) $(ASMFLAGS) $< -o $@
 
 .PHONY: clean
 clean:

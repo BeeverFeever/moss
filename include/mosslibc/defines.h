@@ -2,6 +2,8 @@
 
 #include <mosslibc/stdint.h>
 
+typedef unsigned int uint;
+
 typedef uint8_t byte;
 
 typedef uint8_t        u8;

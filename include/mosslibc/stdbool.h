@@ -2,5 +2,5 @@
 
 typedef enum {
     false = 0,
-    true
+    true = 1
 } bool;

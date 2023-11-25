@@ -1,0 +1,80 @@
+format elf64
+
+use64
+
+macro no_error_interrupt i {
+    interrupt_handler_#i:
+        push dword 0
+        push dword #i
+        jmp common_interrupt_handler
+}
+
+macro error_interrupt i {
+    interrupt_handler_#i:
+        push dword i
+        jmp common_interrupt_handler
+}
+
+common_interrupt_handler:
+    push rax
+    push rcs
+    push rdx
+    push rbx
+    push rsp
+    push rbp
+    push rsi
+    push rdi
+    push r8
+    push r9
+    push r10
+    push r11
+    push r12
+    push r13
+    push r14
+    push r15
+
+    call interrupt_handler
+
+    pop rax
+    pop rcx
+    pop rdx
+    pop rbx
+    pop rsp
+    pop rbp
+    pop rsi
+    pop rdi
+    pop r8
+    pop r9
+    pop r10
+    pop r11
+    pop r12
+    pop r13
+    pop r14
+    pop r15
+
+    add rsp, 16
+
+    iretq
+
+section "text"
+no_error_interrupt a
+; no_error_interrupt 1
+; no_error_interrupt 2
+; no_error_interrupt 3
+; no_error_interrupt 4
+; no_error_interrupt 5
+; no_error_interrupt 6
+; no_error_interrupt 7
+; error_interrupt 8
+; no_error_interrupt 9
+; error_interrupt 10
+; error_interrupt 11
+; error_interrupt 12
+; error_interrupt 13
+; error_interrupt 14
+; no_error_interrupt 15
+; no_error_interrupt 16
+; error_interrupt 17
+; no_error_interrupt 18
+; no_error_interrupt 19
+; no_error_interrupt 20
