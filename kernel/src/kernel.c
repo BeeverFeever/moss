@@ -2,18 +2,13 @@
 #include <mossansi.h>
 #include <mossstring.h>
 
-#include <limine.h>
+#include <limine/limine.h>
 
 #include <flanterm/flanterm.h>
 #include <flanterm/backends/fb.h>
 
 #include "interrupts/gdt.h"
 #include "interrupts/idt.h"
-
-static void print(struct flanterm_context* ctx, String fmt)
-{
-    flanterm_write(ctx, fmt, strlen(fmt));
-}
 
 LIMINE_BASE_REVISION(1)
 
@@ -54,7 +49,6 @@ void kernel_main(void) {
     print(ft_ctx, colour(YELLOW) "\tGDT" reset(R_ALL) " initialised\n");
     idt_init();
     print(ft_ctx, colour(YELLOW) "\tIDT" reset(R_ALL) " initialised\n");
-    asm("sti");
 
     /* const char msg[] = "Hello world\n"; */
 

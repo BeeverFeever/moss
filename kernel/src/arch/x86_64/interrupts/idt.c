@@ -26,11 +26,25 @@ void idt_init(void)
     memset(&idt, 0, sizeof(IDTEntry) * 256);
 
     // add ISR's here
-    /* for (U8 vector = 0; vector <= 255; vector++) { */
-    /*     idt_set_gate(vector, handle_interrupt, 0x8e); */
-    /* } */
+    /* idt_set_gate(0, handle_interrupt, 0x8); */
+    /* idt_set_gate(1, handle_interrupt, 0x8); */
+    /* idt_set_gate(2, handle_interrupt, 0x8); */
+    /* idt_set_gate(3, handle_interrupt, 0x8); */
+    /* idt_set_gate(4, handle_interrupt, 0x8); */
+    /* idt_set_gate(5, handle_interrupt, 0x8); */
+    /* idt_set_gate(6, handle_interrupt, 0x8); */
+    /* idt_set_gate(7, handle_interrupt, 0x8); */
+    /* idt_set_gate(8, handle_interrupt, 0x8); */
+    /* idt_set_gate(9, handle_interrupt, 0x8); */
+    /* idt_set_gate(10, handle_interrupt, 0x8); */
+    /* idt_set_gate(11, handle_interrupt, 0x8); */
+    /* idt_set_gate(255, handle_interrupt, 0x8); */
+    for (U16 vector = 0; vector < 256; vector++) {
+        idt_set_gate(vector, handle_interrupt, 0x8e);
+    }
 
     asm("lidt %0" :: "m"(idtr));
+    asm("sti");
 }
 
 __attribute__((noreturn))

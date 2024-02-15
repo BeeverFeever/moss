@@ -30,7 +30,7 @@ CFLAGS += \
 CPPFLAGS := \
 	-include ../mosslibc/mossdefines.h \
 	-Isrc \
-	-Ibootloader \
+	-I../extern \
 	-isystem ../mosslibc \
     $(CPPFLAGS) \
     -MMD \
@@ -63,8 +63,8 @@ HEADER_DEPS := $(addprefix $(BUILDDIR)/obj/,$(CFILES:.c=.c.d) $(ASFILES:.S=.S.d)
 .PHONY: all
 all: $(BUILDDIR)/bin/$(KERNEL)
 
-bootloader/limine.h:
-	curl -Lo $@ https://github.com/limine-bootloader/limine/raw/trunk/limine.h
+# extern/limine.h:
+# 	curl -Lo $@ https://github.com/limine-bootloader/limine/raw/trunk/limine.h
 
 # Link rules for the final kernel executable.
 $(BUILDDIR)/bin/$(KERNEL): makefile linker.ld $(OBJ)
@@ -75,7 +75,7 @@ $(BUILDDIR)/bin/$(KERNEL): makefile linker.ld $(OBJ)
 -include $(HEADER_DEPS)
 
 # Compilation rules for *.c files.
-$(BUILDDIR)/obj/%.c.o: src/%.c makefile bootloader/limine.h
+$(BUILDDIR)/obj/%.c.o: src/%.c makefile # bootloader/limine.h
 	mkdir -p "$$(dirname $@)"
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
@@ -96,4 +96,4 @@ clean:
 
 .PHONY: distclean
 distclean: clean
-	rm -f bootloader/limine.h
+	# rm -f bootloader/limine.h

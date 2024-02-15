@@ -3,4 +3,3 @@ extern
 *.hdd
 compile_commands.json
 .cache
-extern/limine

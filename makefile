@@ -1,4 +1,4 @@
-IMAGE_NAME := template
+IMAGE_NAME := moss
 
 # literally just to compile limine limine
 CC := cc
