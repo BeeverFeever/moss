@@ -3,6 +3,9 @@
 
 #include <mossint.h>
 
+#define countof(a)    (size)(sizeof(a) / sizeof(*(a)))
+#define lengthof(s)   (countof(s) - 1)
+
 #define NULL    ((void*)0)
 #define nullptr ((void*)0)
 
@@ -12,21 +15,20 @@ typedef __SIZE_TYPE__ size_t; // this is purely here for the required memory
 typedef signed int  Size;
 
 typedef char        Byte;
-typedef char*       String;
 
-typedef uint8_t     U8;
-typedef uint16_t    U16;
-typedef uint32_t    U32;
-typedef uint64_t    U64;
+typedef uint8_t  u8;
+typedef uint16_t u16;
+typedef uint32_t u32;
+typedef uint64_t u64;
 
-typedef int8_t      I8;
-typedef int16_t     I16;
-typedef int32_t     I32;
-typedef int64_t     I64;
+typedef int8_t   i8;
+typedef int16_t  i16;
+typedef int32_t  i32;
+typedef int64_t  i64;
 
 typedef enum {
     false = 0,
     true = 1
-} bool;
+} Bool;
 
 #endif // MOSS_DEFINES_H

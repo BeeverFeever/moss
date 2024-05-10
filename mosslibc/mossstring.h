@@ -1,11 +1,11 @@
 #ifndef MOSS_STRING_H
 #define MOSS_STRING_H
 
-Size strlen(String str)
-{
-    Size size = 0;
-    while (str[size] != '\0') size++;
-    return size;
-}
+#define s8(s) (s8){ (Byte*)s, lengthof(s) }
+
+typedef struct {
+    Byte* str;
+    Size length;
+} s8;
 
 #endif // MOSS_STRING_H

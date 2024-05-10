@@ -2,7 +2,7 @@
 
 #include <mossstring.h>
 
-#include "bootloader/limine.h"
+#include <bootloader.h>
 
 static struct flanterm_context* fb = framebuffer_request.response->framebuffer[0];
 
