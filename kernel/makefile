@@ -1,4 +1,4 @@
-KERNEL := kernel
+KERNEL := moss
 
 DEFAULT_CC := cc
 DEFAULT_LD := ld
@@ -93,7 +93,3 @@ $(BUILDDIR)/obj/%.asm.o: src/%.asm makefile
 .PHONY: clean
 clean:
 	rm -rf $(BUILDDIR)
-
-.PHONY: distclean
-distclean: clean
-	# rm -f bootloader/limine.h

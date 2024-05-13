@@ -8,13 +8,13 @@ __attribute__((aligned(0x10)))
 static IDTEntry idt[256];
 static IDTR idtr;
 
-static void idt_set_gate(U8 vector, void* isr, U8 flags) {
-    idt[vector].offsetLow = (U64)isr & 0xffff;
+static void idt_set_gate(u8 vector, void* isr, u8 flags) {
+    idt[vector].offsetLow = (u64)isr & 0xffff;
     idt[vector].selector = 0x28;
     idt[vector].ist = 0;
     idt[vector].gateType = flags;
-    idt[vector].offsetMid = ((U64)isr >> 16) & 0xffff;
-    idt[vector].offsetHigh = ((U64)isr >> 32) & 0xffffffff;
+    idt[vector].offsetMid = ((u64)isr >> 16) & 0xffff;
+    idt[vector].offsetHigh = ((u64)isr >> 32) & 0xffffffff;
     idt[vector].reserved = 0;
 }
 
@@ -39,7 +39,7 @@ void idt_init(void)
     /* idt_set_gate(10, handle_interrupt, 0x8); */
     /* idt_set_gate(11, handle_interrupt, 0x8); */
     /* idt_set_gate(255, handle_interrupt, 0x8); */
-    for (U16 vector = 0; vector < 256; vector++) {
+    for (u16 vector = 0; vector < 256; vector++) {
         idt_set_gate(vector, handle_interrupt, 0x8e);
     }
 

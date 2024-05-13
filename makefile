@@ -21,9 +21,9 @@ all: $(IMAGE_NAME).iso
 .PHONY: all-hdd
 all-hdd: $(IMAGE_NAME).hdd
 
-.PHONY: qemu
-qemu: $(IMAGE_NAME).iso
-	qemu-system-x86_64 -M q35 -m 2G -cdrom $(IMAGE_NAME).iso -boot d
+# .PHONY: qemu
+# qemu: $(IMAGE_NAME).iso
+# 	qemu-system-x86_64 -M q35 -m 2G -cdrom $(IMAGE_NAME).iso -boot d
 
 .PHONY: run-uefi
 run-uefi: $(OVMF) $(IMAGE_NAME).iso
@@ -42,13 +42,8 @@ $(OVMF):
 	cd $(OVMF) && curl -Lo OVMF.fd https://retrage.github.io/edk2-nightly/bin/RELEASEX64_OVMF.fd
 
 $(LIMINE):
-	git clone https://github.com/limine-bootloader/limine.git --branch=binary --depth=1 $(LIMINE)
-	$(MAKE) -C $(LIMINE) \
-		CC="$(CC)" \
-		CFLAGS="$(CFLAGS)" \
-		CPPFLAGS="$(CPPFLAGS)" \
-		LDFLAGS="$(LDFLAGS)" \
-		LIBS="$(LIBS)"
+	git clone https://github.com/limine-bootloader/limine.git --branch=v7.x-binary --depth=1 $(LIMINE)
+	$(MAKE) -C $(LIMINE)
 
 .PHONY: kernel
 kernel:
@@ -56,19 +51,24 @@ kernel:
 
 $(IMAGE_NAME).iso: $(LIMINE) kernel
 	rm -rf iso_root
-	mkdir -p iso_root
-	cp -v $(BUILDDIR)/bin/kernel \
-		limine.cfg $(LIMINE)/limine-bios.sys $(LIMINE)/limine-bios-cd.bin $(LIMINE)/limine-uefi-cd.bin iso_root/
+	mkdir -p iso_root/boot
+	cp -v $(BUILDDIR)/bin/moss iso_root/boot/
+	mkdir -p iso_root/boot/limine
+	cp -v limine.cfg $(LIMINE)/limine-bios.sys $(LIMINE)/limine-bios-cd.bin \
+		$(LIMINE)/limine-uefi-cd.bin iso_root/boot/limine/
+
 	mkdir -p iso_root/EFI/BOOT
 	cp -v $(LIMINE)/BOOTX64.EFI iso_root/EFI/BOOT/
 	cp -v $(LIMINE)/BOOTIA32.EFI iso_root/EFI/BOOT/
-	xorriso -as mkisofs -b limine-bios-cd.bin \
+
+	xorriso -as mkisofs -b boot/limine/limine-bios-cd.bin \
 		-no-emul-boot -boot-load-size 4 -boot-info-table \
-		--efi-boot limine-uefi-cd.bin \
+		--efi-boot boot/limine/limine-uefi-cd.bin \
 		-efi-boot-part --efi-boot-image --protective-msdos-label \
 		iso_root -o $(IMAGE_NAME).iso
+
 	./$(LIMINE)/limine bios-install $(IMAGE_NAME).iso
-	rm -rf iso_root
+	# rm -rf iso_root
 
 $(IMAGE_NAME).hdd: $(LIMINE) kernel
 	rm -f $(IMAGE_NAME).hdd
@@ -76,8 +76,11 @@ $(IMAGE_NAME).hdd: $(LIMINE) kernel
 	sgdisk $(IMAGE_NAME).hdd -n 1:2048 -t 1:ef00
 	./$(LIMINE)/limine bios-install $(IMAGE_NAME).hdd
 	mformat -i $(IMAGE_NAME).hdd@@1M
-	mmd -i $(IMAGE_NAME).hdd@@1M ::/EFI ::/EFI/BOOT
-	mcopy -i $(IMAGE_NAME).hdd@@1M $(BUILDDIR)/bin/kernel limine.cfg $(LIMINE)/limine-bios.sys ::/
+
+	mmd -i $(IMAGE_NAME).hdd@@1M ::/EFI ::/EFI/BOOT ::/boot ::/boot/limine
+
+	mcopy -i $(IMAGE_NAME).hdd@@1M $(BUILDDIR)/bin/moss ::/boot
+	mcopy -i $(IMAGE_NAME).hdd@@1M limine.cfg $(LIMINE)/limine-bios.sys ::/boot/limine
 	mcopy -i $(IMAGE_NAME).hdd@@1M $(LIMINE)/BOOTX64.EFI ::/EFI/BOOT
 	mcopy -i $(IMAGE_NAME).hdd@@1M $(LIMINE)/BOOTIA32.EFI ::/EFI/BOOT
 
@@ -89,4 +92,3 @@ clean:
 .PHONY: distclean
 distclean: clean
 	rm -rf $(LIMINE) $(OVMF)
-	$(MAKE) -C kernel distclean

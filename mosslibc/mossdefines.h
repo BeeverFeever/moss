@@ -3,7 +3,7 @@
 
 #include <mossint.h>
 
-#define countof(a)    (size)(sizeof(a) / sizeof(*(a)))
+#define countof(a)    (Size)(sizeof(a) / sizeof(*(a)))
 #define lengthof(s)   (countof(s) - 1)
 
 #define NULL    ((void*)0)
@@ -30,5 +30,11 @@ typedef enum {
     false = 0,
     true = 1
 } Bool;
+
+#define s8(s) (s8){ (Byte*)s, lengthof(s) }
+typedef struct {
+    Byte* str;
+    Size length;
+} s8;
 
 #endif // MOSS_DEFINES_H

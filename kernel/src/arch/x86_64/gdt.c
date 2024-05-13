@@ -2,7 +2,7 @@
 
 __attribute__((aligned(8)))
 static GDT gdt;
-static GDTR gdtr = (GDTR){ .base = (U64)&gdt, .limit = sizeof(gdt) - 1 };
+static GDTR gdtr = (GDTR){ .base = (u64)&gdt, .limit = sizeof(gdt) - 1 };
 
 
 void gdt_init(void)
