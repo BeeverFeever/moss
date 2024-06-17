@@ -41,7 +41,7 @@ void kernel_main(void) {
    volatile u32* fb_ptr = fb->address;
    // memset(fb_ptr, 0, fb->height * fb->pitch);
    for (u32 i = 0; i < 100; i++) {
-      fb_ptr[i * (bootloader_framebuffer->framebuffers[0]->pitch / 4) + i] = 0x00000000;
+      fb_ptr[i * (bootloader_framebuffer->framebuffers[0]->pitch / 4) + i] = 0xffffffff;
    }
    // console_write(s8("hi there"));
 
