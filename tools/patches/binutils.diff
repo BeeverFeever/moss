@@ -1,0 +1,190 @@
+diff --color -Nur a/bfd/config.bfd b/bfd/config.bfd
+--- a/bfd/config.bfd	2024-01-29 11:00:00.000000000 +1100
++++ b/bfd/config.bfd	2024-06-17 01:12:11.928470237 +1000
+@@ -236,6 +236,18 @@
+ 
+ case "${targ}" in
+ # START OF targmatch.h
++  i[3-7]86-*-moss*)
++    targ_defvec=i386_elf32_vec
++    targ_selvecs=
++    targ64_selvecs=x86_64_elf64_vec
++    ;;
++#ifdef BFD64
++  x86_64-*-moss*)
++    targ_defvec=x86_64_elf64_vec
++    targ_selvecs=i386_elf32_vec
++    want64=true
++    ;;
++#endif
+ #ifdef BFD64
+   aarch64-*-darwin*)
+     targ_defvec=aarch64_mach_o_vec
+@@ -748,10 +760,6 @@
+     targ_defvec=i386_aout_vec
+     targ_selvecs=i386_msdos_vec
+     ;;
+-  i[3-7]86-*-moss*)
+-    targ_defvec=i386_elf32_vec
+-    targ_selvecs="iamcu_elf32_vec i386_msdos_vec i386_aout_vec"
+-    ;;
+   i[3-7]86-*-beospe*)
+     targ_defvec=i386_pe_vec
+     targ_selvecs="i386_pe_vec i386_pei_vec"
+diff --color -Nur a/binutils/testsuite/binutils-all/nm.exp b/binutils/testsuite/binutils-all/nm.exp
+--- a/binutils/testsuite/binutils-all/nm.exp	2024-01-29 11:00:00.000000000 +1100
++++ b/binutils/testsuite/binutils-all/nm.exp	2024-06-17 01:07:02.860718232 +1000
+@@ -152,7 +152,6 @@
+     || [istarget *-*-*elf]
+     || [istarget *-*-freebsd*]
+     || [istarget *-*-lynxos*]
+-    || [istarget *-*-moss*]
+     || [istarget "mmix-knuth-mmixware"]
+     || [istarget *-*-nto*]
+     || [istarget *-*-rdos*]
+diff --color -Nur a/gas/configure.tgt b/gas/configure.tgt
+--- a/gas/configure.tgt	2024-01-29 11:00:00.000000000 +1100
++++ b/gas/configure.tgt	2024-06-17 01:12:36.081627244 +1000
+@@ -250,7 +250,7 @@
+   | i386-*-go32*)			fmt=coff em=go32 ;;
+   i386-*-gnu*)				fmt=elf em=gnu ;;
+   i386-*-msdos*)			fmt=aout ;;
+-  i386-*-moss*)				fmt=elf ;;
++  i386-*-moss*)				fmt=elf em=gnu ;;
+   i386-*-pe)				fmt=coff em=pe ;;
+   i386-*-cygwin*)
+    case ${cpu} in
+diff --color -Nur a/gas/testsuite/gas/i386/x86-64.exp b/gas/testsuite/gas/i386/x86-64.exp
+--- a/gas/testsuite/gas/i386/x86-64.exp	2024-01-29 11:00:00.000000000 +1100
++++ b/gas/testsuite/gas/i386/x86-64.exp	2024-06-17 01:06:22.104346770 +1000
+@@ -609,7 +609,6 @@
+      && ![istarget "*-*-beos*"]
+      && ![istarget "*-*-*bsd*"]
+      && ![istarget "*-*-lynx*"]
+-     && ![istarget "*-*-moss*"]
+      && ![istarget "*-*-nto-qnx*"]
+      && ![istarget "*-*-rtems*"]
+      && ![istarget "*-*-sco*"]
+diff --color -Nur a/ld/configure.tgt b/ld/configure.tgt
+--- a/ld/configure.tgt	2024-01-29 11:00:00.000000000 +1100
++++ b/ld/configure.tgt	2024-06-17 01:23:15.460263054 +1000
+@@ -82,6 +82,15 @@
+ # Please try to keep this table more or less in alphabetic order - it
+ # makes it much easier to lookup a specific archictecture.
+ case "${targ}" in
++i[3-7]86-*-moss*)
++			targ_emul=elf_i386_moss
++			targ_extra_emuls=elf_i386
++			targ64_extra_emuls="elf_x86_64_moss elf_x86_64"
++			;;
++x86_64-*-moss*)
++			targ_emul=elf_x86_64_moss
++			targ_extra_emuls="elf_i386_moss elf_x86_64 elf_i386"
++			;;
+ aarch64_be-*-elf)	targ_emul=aarch64elfb
+ 			targ_extra_emuls="aarch64elf aarch64elf32 aarch64elf32b armelfb armelf"
+ 			;;
+@@ -420,9 +429,6 @@
+ 			targ_extra_emuls=i386aout
+ 			targ_extra_ofiles=
+ 			;;
+-i[3-7]86-*-moss*)	targ_emul=i386moss
+-			targ_extra_emuls=i386msdos
+-			;;
+ i[3-7]86-*-winnt*)	targ_emul=i386pe ;
+ 			targ_extra_ofiles="deffilep.o pdb.o pe-dll.o"
+ 			;;
+@@ -1108,6 +1114,10 @@
+ NATIVE_LIB_DIRS='/usr/local/lib /lib /usr/lib'
+ case "${target}" in
+ 
++*-*-moss*)
++  NATIVE_LIB_DIRS='/sys/libs /local/libs'
++  ;;
++
+ *-*-dragonfly*)
+   NATIVE_LIB_DIRS='/lib /usr/lib /usr/pkg/lib /usr/local/lib'
+   ;;
+diff --color -Nur a/ld/emulparams/elf_i386_moss.sh b/ld/emulparams/elf_i386_moss.sh
+--- a/ld/emulparams/elf_i386_moss.sh	1970-01-01 10:00:00.000000000 +1000
++++ b/ld/emulparams/elf_i386_moss.sh	2024-06-17 01:15:04.463875358 +1000
+@@ -0,0 +1,2 @@
++source_sh ${srcdir}/emulparams/elf_i386.sh
++TEXT_START_ADDR=0x08000000
+diff --color -Nur a/ld/emulparams/elf_x86_64_moss.sh b/ld/emulparams/elf_x86_64_moss.sh
+--- a/ld/emulparams/elf_x86_64_moss.sh	1970-01-01 10:00:00.000000000 +1000
++++ b/ld/emulparams/elf_x86_64_moss.sh	2024-06-17 01:15:41.193606232 +1000
+@@ -0,0 +1 @@
++source_sh ${srcdir}/emulparams/elf_x86_64.sh
+diff --color -Nur a/ld/emulparams/i386moss.sh b/ld/emulparams/i386moss.sh
+--- a/ld/emulparams/i386moss.sh	2024-01-29 11:00:00.000000000 +1100
++++ b/ld/emulparams/i386moss.sh	1970-01-01 10:00:00.000000000 +1000
+@@ -1,11 +0,0 @@
+-SCRIPT_NAME=elf
+-OUTPUT_FORMAT="elf32-i386"
+-NO_RELA_RELOCS=yes
+-TEXT_START_ADDR=0x00002000
+-MAXPAGESIZE="CONSTANT (MAXPAGESIZE)"
+-ARCH=i386
+-MACHINE=
+-NOP=0x90909090
+-TEMPLATE_NAME=elf
+-EXTRA_EM_FILE="elf-x86"
+-GENERATE_SHLIB_SCRIPT=yes
+diff --color -Nur a/ld/Makefile.am b/ld/Makefile.am
+--- a/ld/Makefile.am	2024-01-29 11:00:00.000000000 +1100
++++ b/ld/Makefile.am	2024-06-17 01:19:05.638771509 +1000
+@@ -152,6 +152,7 @@
+ 
+ # These all start with e so 'make clean' can find them.
+ ALL_EMULATION_SOURCES = \
++	eelf_i386_moss.c \
+ 	eaix5ppc.c \
+ 	eaix5rs6.c \
+ 	eaixppc.c \
+@@ -305,7 +306,6 @@
+ 	ei386bsd.c \
+ 	ei386go32.c \
+ 	ei386lynx.c \
+-	ei386moss.c \
+ 	ei386msdos.c \
+ 	ei386nto.c \
+ 	ei386pe.c \
+@@ -377,6 +377,7 @@
+ ALL_EMULATIONS = $(ALL_EMULATION_SOURCES:.c=.@OBJEXT@)
+ 
+ ALL_64_EMULATION_SOURCES = \
++	eelf_x86_64_moss.c \
+ 	eaarch64cloudabi.c \
+ 	eaarch64cloudabib.c \
+ 	eaarch64elf.c \
+diff --color -Nur a/ld/Makefile.in b/ld/Makefile.in
+--- a/ld/Makefile.in	2024-01-29 11:00:00.000000000 +1100
++++ b/ld/Makefile.in	2024-06-17 00:49:24.601605869 +1000
+@@ -816,7 +816,6 @@
+ 	ei386bsd.c \
+ 	ei386go32.c \
+ 	ei386lynx.c \
+-	ei386moss.c \
+ 	ei386msdos.c \
+ 	ei386nto.c \
+ 	ei386pe.c \
+@@ -1513,7 +1512,6 @@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ei386bsd.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ei386go32.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ei386lynx.Po@am__quote@
+-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ei386moss.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ei386msdos.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ei386nto.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ei386pe.Po@am__quote@
+diff --color -Nur a/sha256.sum b/sha256.sum
+--- a/sha256.sum	2024-01-29 11:00:00.000000000 +1100
++++ b/sha256.sum	2024-06-17 01:00:26.663574240 +1000
+@@ -17364,7 +17364,6 @@
+ 8608c96a94a43fcd24ff6baf1b4c5ba985751236367025913939fa38bc481f36  ld/emulparams/i386bsd.sh
+ 2191b0823b7442a7ae592672bff0404564bdb563273b5a02115832b05c0298f9  ld/emulparams/i386go32.sh
+ d310e6e78b8116b42cbadc2fb95f726e6708e16dc27bf632a9c881180884b377  ld/emulparams/i386lynx.sh
+-beb486434385505c3750d922333905c85853807f1e9e686742a0ded2f5bd352f  ld/emulparams/i386moss.sh
+ 1f4a8f84e95746a4439ff40330c3cdf1f7d3783b8bf4e74c3cdad6ceabef6844  ld/emulparams/i386msdos.sh
+ d16ebb49532fd28c9d0aebbe85c4198c6b7b377294319a7dde53310d4e946cf8  ld/emulparams/i386nto.sh
+ 20d251b92b1fa86e6e72ac4e22dd6afbd8e6900bb5958f735c42f42d7ff4c4f0  ld/emulparams/i386pe.sh
