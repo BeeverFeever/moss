@@ -1,18 +1,17 @@
 KERNEL := moss
 
-DEFAULT_CC := cc
-DEFAULT_LD := ld
-DEFAULT_CFLAGS := -g -O2 -pipe
-DEFAULT_CPPFLAGS :=
-DEFAULT_FASMFLAGS := -F dwarf -g
-DEFAULT_LDFLAGS :=
+CC := ../tools/path/bin/x86_64-moss-gcc
+LD := ../tools/path/bin/x86_64-moss-ld
+CFLAGS := -g -O2 -pipe
+CPPFLAGS :=
+FASMFLAGS := -F dwarf -g
+LDFLAGS :=
 
 BUILDDIR := ./build
 
 CFLAGS += \
     -Wall \
     -Wextra \
-    -std=gnu11 \
     -ffreestanding \
     -fno-stack-protector \
     -fno-stack-check \
@@ -28,17 +27,16 @@ CFLAGS += \
 
 # Internal C preprocessor flags that should not be changed by the user.
 CPPFLAGS := \
-	-include ../mosslibc/mossdefines.h \
+	-include ../mosslib/include/mosscommon.h \
 	-Isrc \
 	-I../extern \
-	-isystem ../mosslibc \
-    $(CPPFLAGS) \
-    -MMD \
-    -MP
+	$(CFLAGS) \
+	-MMD \
+	-MP
 
 # Internal linker flags that should not be changed by the user.
 LDFLAGS += \
-    -m elf_x86_64 \
+    -m elf_x86_64_moss \
     -nostdlib \
     -static \
     -pie \

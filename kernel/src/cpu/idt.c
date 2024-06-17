@@ -1,6 +1,5 @@
-#include <mossmemory.h>
-
 #include "idt.h"
+#include <utils/memory.h>
 
 void handle_interrupt(void);
 
