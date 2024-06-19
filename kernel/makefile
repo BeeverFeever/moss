@@ -2,40 +2,34 @@ KERNEL := moss
 
 CC := ../tools/path/bin/x86_64-moss-gcc
 LD := ../tools/path/bin/x86_64-moss-ld
-CFLAGS := -g -O2 -pipe
-CPPFLAGS :=
-FASMFLAGS := -F dwarf -g
-LDFLAGS :=
-
 BUILDDIR := ./build
 
-CFLAGS += \
+CFLAGS := -g -c \
+			 -include ../mosslib/include/mosscommon.h \
+			 -Isrc \
+			 -I../extern \
+			 -Wall \
+			 -Wextra \
+			 -ffreestanding \
+			 -fno-stack-protector \
+			 -fno-stack-check \
+			 -fno-lto \
+			 -fPIE \
+			 -fcommon \
+			 -nostartfiles \
+			 -nostdlib \
+			 -m64 \
+			 -mno-mmx \
+			 -mno-80387 \
+			 -mno-sse \
+			 -mno-sse2 \
+			 -mno-red-zone
+
+FASMFLAGS := -F dwarf -g \
     -Wall \
-    -Wextra \
-    -ffreestanding \
-    -fno-stack-protector \
-    -fno-stack-check \
-    -fno-lto \
-    -fPIE \
-    -m64 \
-    -march=x86-64 \
-    -mno-80387 \
-    -mno-mmx \
-    -mno-sse \
-    -mno-sse2 \
-    -mno-red-zone
+    -f elf64
 
-# Internal C preprocessor flags that should not be changed by the user.
-CPPFLAGS := \
-	-include ../mosslib/include/mosscommon.h \
-	-Isrc \
-	-I../extern \
-	$(CFLAGS) \
-	-MMD \
-	-MP
-
-# Internal linker flags that should not be changed by the user.
-LDFLAGS += \
+LDFLAGS := \
     -m elf_x86_64_moss \
     -nostdlib \
     -static \
@@ -45,15 +39,9 @@ LDFLAGS += \
     -z max-page-size=0x1000 \
     -T linker.ld
 
-FASMFLAGS += \
-    -Wall \
-    -f elf64
-
-# Use "find" to glob all *.c, *.S, and *.asm files in the tree and obtain the
-# object and header dependency file names.
 CFILES := $(shell cd src && find -L * -type f -name '*.c')
-ASFILES := $(shell cd src && find -L * -type f -name '*.S')
 FASMFILES := $(shell cd src && find -L * -type f -name '*.asm')
+
 OBJ := $(addprefix $(BUILDDIR)/obj/,$(CFILES:.c=.c.o) $(ASFILES:.S=.S.o) $(FASMFILES:.asm=.asm.o))
 HEADER_DEPS := $(addprefix $(BUILDDIR)/obj/,$(CFILES:.c=.c.d) $(ASFILES:.S=.S.d))
 
@@ -65,25 +53,15 @@ all: $(BUILDDIR)/bin/$(KERNEL)
 # 	curl -Lo $@ https://github.com/limine-bootloader/limine/raw/trunk/limine.h
 
 # Link rules for the final kernel executable.
-$(BUILDDIR)/bin/$(KERNEL): makefile linker.ld $(OBJ)
+$(BUILDDIR)/bin/$(KERNEL): linker.ld $(OBJ)
 	mkdir -p "$$(dirname $@)"
 	$(LD) $(OBJ) $(LDFLAGS) -o $@
 
-# Include header dependencies.
--include $(HEADER_DEPS)
-
-# Compilation rules for *.c files.
-$(BUILDDIR)/obj/%.c.o: src/%.c makefile # bootloader/limine.h
+$(BUILDDIR)/obj/%.c.o: src/%.c # bootloader/limine.h
 	mkdir -p "$$(dirname $@)"
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
-# Compilation rules for *.S files.
-$(BUILDDIR)/obj/%.S.o: src/%.S makefile
-	mkdir -p "$$(dirname $@)"
-	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
-
-# Compilation rules for *.asm (fasm) files.
-$(BUILDDIR)/obj/%.asm.o: src/%.asm makefile
+$(BUILDDIR)/obj/%.asm.o: src/%.asm
 	mkdir -p "$$(dirname $@)"
 	fasm $(FASMFLAGS) $< -o $@
 

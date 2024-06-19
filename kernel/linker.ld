@@ -29,11 +29,9 @@ SECTIONS
     /* Move to the next memory page for .rodata */
     . += CONSTANT(MAXPAGESIZE);
 
-    kernel_rodata_start = .;
     .rodata : {
         *(.rodata .rodata.*)
     } :rodata
-    kernel_rodata_end = .;
 
     /* Move to the next memory page for .data */
     . += CONSTANT(MAXPAGESIZE);

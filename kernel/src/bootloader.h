@@ -4,17 +4,13 @@
 #include <limine/limine.h>
 
 typedef struct {
-   
+   volatile struct limine_framebuffer_response* framebuffer;
+   volatile struct limine_hhdm_response* hhdm;
+   volatile struct limine_kernel_address_response* kernel_address;
+   volatile struct limine_memmap_response* memmap;
 } Bootloader;
 
-#define bootloader_module(name) extern volatile struct limine_##name##_response* bootloader_##name
-
-bootloader_module(hhdm);
-bootloader_module(kernel_address);
-bootloader_module(framebuffer);
-bootloader_module(memmap);
-
-#undef bootloader_module
+Bootloader bootloader;
 
 void bootloader_init(void);
 

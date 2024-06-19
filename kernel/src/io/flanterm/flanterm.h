@@ -30,8 +30,8 @@
 extern "C" {
 #endif
 
-#include <mossdefines.h>
-#include <mossint.h>
+// #include <mossdefines.h>
+// #include <mossint.h>
 
 #define FLANTERM_MAX_ESC_VALUES 16
 
@@ -56,7 +56,7 @@ extern "C" {
 struct flanterm_context {
     /* internal use */
 
-    size_t tab_size;
+    Size tab_size;
     Bool autoflush;
     Bool cursor_enabled;
     Bool scroll_enabled;
@@ -72,47 +72,47 @@ struct flanterm_context {
     Bool reverse_video;
     Bool dec_private;
     Bool insert_mode;
-    uint64_t code_point;
-    size_t unicode_remaining;
-    uint8_t g_select;
-    uint8_t charsets[2];
-    size_t current_charset;
-    size_t escape_offset;
-    size_t esc_values_i;
-    size_t saved_cursor_x;
-    size_t saved_cursor_y;
-    size_t current_primary;
-    size_t current_bg;
-    size_t scroll_top_margin;
-    size_t scroll_bottom_margin;
-    uint32_t esc_values[FLANTERM_MAX_ESC_VALUES];
-    uint64_t oob_output;
+    u64 code_point;
+    Size unicode_remaining;
+    u8 g_select;
+    u8 charsets[2];
+    Size current_charset;
+    Size escape_offset;
+    Size esc_values_i;
+    Size saved_cursor_x;
+    Size saved_cursor_y;
+    Size current_primary;
+    Size current_bg;
+    Size scroll_top_margin;
+    Size scroll_bottom_margin;
+    u32 esc_values[FLANTERM_MAX_ESC_VALUES];
+    u64 oob_output;
     Bool saved_state_bold;
     Bool saved_state_bg_bold;
     Bool saved_state_reverse_video;
-    size_t saved_state_current_charset;
-    size_t saved_state_current_primary;
-    size_t saved_state_current_bg;
+    Size saved_state_current_charset;
+    Size saved_state_current_primary;
+    Size saved_state_current_bg;
 
     /* to be set by backend */
 
-    size_t rows, cols;
+    Size rows, cols;
 
-    void (*raw_putchar)(struct flanterm_context *, uint8_t c);
+    void (*raw_putchar)(struct flanterm_context *, u8 c);
     void (*clear)(struct flanterm_context *, Bool move);
-    void (*set_cursor_pos)(struct flanterm_context *, size_t x, size_t y);
-    void (*get_cursor_pos)(struct flanterm_context *, size_t *x, size_t *y);
-    void (*set_text_fg)(struct flanterm_context *, size_t fg);
-    void (*set_text_bg)(struct flanterm_context *, size_t bg);
-    void (*set_text_fg_bright)(struct flanterm_context *, size_t fg);
-    void (*set_text_bg_bright)(struct flanterm_context *, size_t bg);
-    void (*set_text_fg_rgb)(struct flanterm_context *, uint32_t fg);
-    void (*set_text_bg_rgb)(struct flanterm_context *, uint32_t bg);
+    void (*set_cursor_pos)(struct flanterm_context *, Size x, Size y);
+    void (*get_cursor_pos)(struct flanterm_context *, Size *x, Size *y);
+    void (*set_text_fg)(struct flanterm_context *, Size fg);
+    void (*set_text_bg)(struct flanterm_context *, Size bg);
+    void (*set_text_fg_bright)(struct flanterm_context *, Size fg);
+    void (*set_text_bg_bright)(struct flanterm_context *, Size bg);
+    void (*set_text_fg_rgb)(struct flanterm_context *, u32 fg);
+    void (*set_text_bg_rgb)(struct flanterm_context *, u32 bg);
     void (*set_text_fg_default)(struct flanterm_context *);
     void (*set_text_bg_default)(struct flanterm_context *);
     void (*set_text_fg_default_bright)(struct flanterm_context *);
     void (*set_text_bg_default_bright)(struct flanterm_context *);
-    void (*move_character)(struct flanterm_context *, size_t new_x, size_t new_y, size_t old_x, size_t old_y);
+    void (*move_character)(struct flanterm_context *, Size new_x, Size new_y, Size old_x, Size old_y);
     void (*scroll)(struct flanterm_context *);
     void (*revscroll)(struct flanterm_context *);
     void (*swap_palette)(struct flanterm_context *);
@@ -120,15 +120,15 @@ struct flanterm_context {
     void (*restore_state)(struct flanterm_context *);
     void (*double_buffer_flush)(struct flanterm_context *);
     void (*full_refresh)(struct flanterm_context *);
-    void (*deinit)(struct flanterm_context *, void (*)(void *, size_t));
+    void (*deinit)(struct flanterm_context *, void (*)(void *, Size));
 
     /* to be set by client */
 
-    void (*callback)(struct flanterm_context *, uint64_t, uint64_t, uint64_t, uint64_t);
+    void (*callback)(struct flanterm_context *, u64, u64, u64, u64);
 };
 
 void flanterm_context_reinit(struct flanterm_context *ctx);
-void flanterm_write(struct flanterm_context *ctx, const char *buf, size_t count);
+void flanterm_write(struct flanterm_context *ctx, const char *buf, Size count);
 
 #ifdef __cplusplus
 }

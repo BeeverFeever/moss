@@ -23,13 +23,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <mossint.h>
-
 #include "../flanterm.h"
 #include "fb.h"
 
-void *memset(void *, int, size_t);
-void *memcpy(void *, const void *, size_t);
+void *memset(void *, int, Size);
+void *memcpy(void *, const void *, Size);
 
 #ifndef FLANTERM_FB_DISABLE_BUMP_ALLOC
 
@@ -37,13 +35,13 @@ void *memcpy(void *, const void *, size_t);
 #define FLANTERM_FB_BUMP_ALLOC_POOL_SIZE (64*1024*1024)
 #endif
 
-static uint8_t bump_alloc_pool[FLANTERM_FB_BUMP_ALLOC_POOL_SIZE];
-static size_t bump_alloc_ptr = 0;
+static u8 bump_alloc_pool[FLANTERM_FB_BUMP_ALLOC_POOL_SIZE];
+static Size bump_alloc_ptr = 0;
 
-static void *bump_alloc(size_t s) {
-    size_t next_ptr = bump_alloc_ptr + s;
+static void *bump_alloc(Size s) {
+    Size next_ptr = bump_alloc_ptr + s;
     if (next_ptr > FLANTERM_FB_BUMP_ALLOC_POOL_SIZE) {
-        return NULL;
+        return null;
     }
     void *ret = &bump_alloc_pool[bump_alloc_ptr];
     bump_alloc_ptr = next_ptr;
@@ -54,7 +52,7 @@ static void *bump_alloc(size_t s) {
 
 // Builtin font originally taken from:
 // https://github.com/viler-int10h/vga-text-mode-fonts/raw/master/FONTS/PC-OTHER/TOSH-SAT.F16
-static const uint8_t builtin_font[] = {
+static const u8 builtin_font[] = {
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
   0x00, 0x00, 0x00, 0x00, 0x00, 0x3c, 0x42, 0x81, 0x81, 0xa5, 0xa5, 0x81,
   0x81, 0xa5, 0x99, 0x81, 0x42, 0x3c, 0x00, 0x00, 0x00, 0x3c, 0x7e, 0xff,
@@ -400,11 +398,11 @@ static const uint8_t builtin_font[] = {
 };
 
 #ifdef FLANTERM_FB_SUPPORT_BPP
-static inline __attribute__((always_inline)) uint32_t convert_colour(struct flanterm_context *_ctx, uint32_t colour) {
+static inline __attribute__((always_inline)) u32 convert_colour(struct flanterm_context *_ctx, u32 colour) {
     struct flanterm_fb_context *ctx = (void *)_ctx;
-    uint32_t r = (colour >> 16) & 0xff;
-    uint32_t g = (colour >> 8) & 0xff;
-    uint32_t b =  colour & 0xff;
+    u32 r = (colour >> 16) & 0xff;
+    u32 g = (colour >> 8) & 0xff;
+    u32 b =  colour & 0xff;
     return (r << ctx->red_mask_shift) | (g << ctx->green_mask_shift) | (b << ctx->blue_mask_shift);
 }
 #else
@@ -429,12 +427,12 @@ static void flanterm_fb_restore_state(struct flanterm_context *_ctx) {
 
 static void flanterm_fb_swap_palette(struct flanterm_context *_ctx) {
     struct flanterm_fb_context *ctx = (void *)_ctx;
-    uint32_t tmp = ctx->text_bg;
+    u32 tmp = ctx->text_bg;
     ctx->text_bg = ctx->text_fg;
     ctx->text_fg = tmp;
 }
 
-static void plot_char(struct flanterm_context *_ctx, struct flanterm_fb_char *c, size_t x, size_t y) {
+static void plot_char(struct flanterm_context *_ctx, struct flanterm_fb_char *c, Size x, Size y) {
     struct flanterm_fb_context *ctx = (void *)_ctx;
 
     if (x >= _ctx->cols || y >= _ctx->rows) {
@@ -442,32 +440,32 @@ static void plot_char(struct flanterm_context *_ctx, struct flanterm_fb_char *c,
     }
 
 #ifdef FLANTERM_FB_DISABLE_CANVAS
-    uint32_t default_bg = ctx->default_bg;
+    u32 default_bg = ctx->default_bg;
 #endif
 
     x = ctx->offset_x + x * ctx->glyph_width;
     y = ctx->offset_y + y * ctx->glyph_height;
 
-    bool *glyph = &ctx->font_bool[c->c * ctx->font_height * ctx->font_width];
+    Bool *glyph = &ctx->font_bool[c->c * ctx->font_height * ctx->font_width];
     // naming: fx,fy for font coordinates, gx,gy for glyph coordinates
-    for (size_t gy = 0; gy < ctx->glyph_height; gy++) {
-        uint8_t fy = gy / ctx->font_scale_y;
-        volatile uint32_t *fb_line = ctx->framebuffer + x + (y + gy) * (ctx->pitch / 4);
+    for (Size gy = 0; gy < ctx->glyph_height; gy++) {
+        u8 fy = gy / ctx->font_scale_y;
+        volatile u32 *fb_line = ctx->framebuffer + x + (y + gy) * (ctx->pitch / 4);
 
 #ifndef FLANTERM_FB_DISABLE_CANVAS
-        uint32_t *canvas_line = ctx->canvas + x + (y + gy) * ctx->width;
+        u32 *canvas_line = ctx->canvas + x + (y + gy) * ctx->width;
 #endif
 
-        for (size_t fx = 0; fx < ctx->font_width; fx++) {
-            bool draw = glyph[fy * ctx->font_width + fx];
-            for (size_t i = 0; i < ctx->font_scale_x; i++) {
-                size_t gx = ctx->font_scale_x * fx + i;
+        for (Size fx = 0; fx < ctx->font_width; fx++) {
+            Bool draw = glyph[fy * ctx->font_width + fx];
+            for (Size i = 0; i < ctx->font_scale_x; i++) {
+                Size gx = ctx->font_scale_x * fx + i;
 #ifndef FLANTERM_FB_DISABLE_CANVAS
-                uint32_t bg = c->bg == 0xffffffff ? canvas_line[gx] : c->bg;
-                uint32_t fg = c->fg == 0xffffffff ? canvas_line[gx] : c->fg;
+                u32 bg = c->bg == 0xffffffff ? canvas_line[gx] : c->bg;
+                u32 fg = c->fg == 0xffffffff ? canvas_line[gx] : c->fg;
 #else
-                uint32_t bg = c->bg == 0xffffffff ? default_bg : c->bg;
-                uint32_t fg = c->fg == 0xffffffff ? default_bg : c->fg;
+                u32 bg = c->bg == 0xffffffff ? default_bg : c->bg;
+                u32 fg = c->fg == 0xffffffff ? default_bg : c->fg;
 #endif
                 fb_line[gx] = draw ? fg : bg;
             }
@@ -476,7 +474,7 @@ static void plot_char(struct flanterm_context *_ctx, struct flanterm_fb_char *c,
 }
 
 #ifdef FLANTERM_FB_ENABLE_MASKING
-static void plot_char_masked(struct flanterm_context *_ctx, struct flanterm_fb_char *old, struct flanterm_fb_char *c, size_t x, size_t y) {
+static void plot_char_masked(struct flanterm_context *_ctx, struct flanterm_fb_char *old, struct flanterm_fb_char *c, Size x, Size y) {
     struct flanterm_fb_context *ctx = (void *)_ctx;
 
     if (x >= _ctx->cols || y >= _ctx->rows) {
@@ -487,30 +485,30 @@ static void plot_char_masked(struct flanterm_context *_ctx, struct flanterm_fb_c
     y = ctx->offset_y + y * ctx->glyph_height;
 
 #ifdef FLANTERM_FB_DISABLE_CANVAS
-    uint32_t default_bg = ctx->default_bg;
+    u32 default_bg = ctx->default_bg;
 #endif
 
-    bool *new_glyph = &ctx->font_bool[c->c * ctx->font_height * ctx->font_width];
-    bool *old_glyph = &ctx->font_bool[old->c * ctx->font_height * ctx->font_width];
-    for (size_t gy = 0; gy < ctx->glyph_height; gy++) {
-        uint8_t fy = gy / ctx->font_scale_y;
-        volatile uint32_t *fb_line = ctx->framebuffer + x + (y + gy) * (ctx->pitch / 4);
+    Bool *new_glyph = &ctx->font_bool[c->c * ctx->font_height * ctx->font_width];
+    Bool *old_glyph = &ctx->font_bool[old->c * ctx->font_height * ctx->font_width];
+    for (Size gy = 0; gy < ctx->glyph_height; gy++) {
+        u8 fy = gy / ctx->font_scale_y;
+        volatile u32 *fb_line = ctx->framebuffer + x + (y + gy) * (ctx->pitch / 4);
 #ifndef FLANTERM_FB_DISABLE_CANVAS
-        uint32_t *canvas_line = ctx->canvas + x + (y + gy) * ctx->width;
+        u32 *canvas_line = ctx->canvas + x + (y + gy) * ctx->width;
 #endif
-        for (size_t fx = 0; fx < ctx->font_width; fx++) {
-            bool old_draw = old_glyph[fy * ctx->font_width + fx];
-            bool new_draw = new_glyph[fy * ctx->font_width + fx];
+        for (Size fx = 0; fx < ctx->font_width; fx++) {
+            Bool old_draw = old_glyph[fy * ctx->font_width + fx];
+            Bool new_draw = new_glyph[fy * ctx->font_width + fx];
             if (old_draw == new_draw)
                 continue;
-            for (size_t i = 0; i < ctx->font_scale_x; i++) {
-                size_t gx = ctx->font_scale_x * fx + i;
+            for (Size i = 0; i < ctx->font_scale_x; i++) {
+                Size gx = ctx->font_scale_x * fx + i;
 #ifndef FLANTERM_FB_DISABLE_CANVAS
-                uint32_t bg = c->bg == 0xffffffff ? canvas_line[gx] : c->bg;
-                uint32_t fg = c->fg == 0xffffffff ? canvas_line[gx] : c->fg;
+                u32 bg = c->bg == 0xffffffff ? canvas_line[gx] : c->bg;
+                u32 fg = c->fg == 0xffffffff ? canvas_line[gx] : c->fg;
 #else
-                uint32_t bg = c->bg == 0xffffffff ? default_bg : c->bg;
-                uint32_t fg = c->fg == 0xffffffff ? default_bg : c->fg;
+                u32 bg = c->bg == 0xffffffff ? default_bg : c->bg;
+                u32 fg = c->fg == 0xffffffff ? default_bg : c->fg;
 #endif
                 fb_line[gx] = new_draw ? fg : bg;
             }
@@ -519,22 +517,22 @@ static void plot_char_masked(struct flanterm_context *_ctx, struct flanterm_fb_c
 }
 #endif
 
-static inline bool compare_char(struct flanterm_fb_char *a, struct flanterm_fb_char *b) {
+static inline Bool compare_char(struct flanterm_fb_char *a, struct flanterm_fb_char *b) {
     return !(a->c != b->c || a->bg != b->bg || a->fg != b->fg);
 }
 
-static void push_to_queue(struct flanterm_context *_ctx, struct flanterm_fb_char *c, size_t x, size_t y) {
+static void push_to_queue(struct flanterm_context *_ctx, struct flanterm_fb_char *c, Size x, Size y) {
     struct flanterm_fb_context *ctx = (void *)_ctx;
 
     if (x >= _ctx->cols || y >= _ctx->rows) {
         return;
     }
 
-    size_t i = y * _ctx->cols + x;
+    Size i = y * _ctx->cols + x;
 
     struct flanterm_fb_queue_item *q = ctx->map[i];
 
-    if (q == NULL) {
+    if (q == null) {
         if (compare_char(&ctx->grid[i], c)) {
             return;
         }
@@ -550,14 +548,14 @@ static void push_to_queue(struct flanterm_context *_ctx, struct flanterm_fb_char
 static void flanterm_fb_revscroll(struct flanterm_context *_ctx) {
     struct flanterm_fb_context *ctx = (void *)_ctx;
 
-    for (size_t i = (_ctx->scroll_bottom_margin - 1) * _ctx->cols - 1;
+    for (Size i = (_ctx->scroll_bottom_margin - 1) * _ctx->cols - 1;
          i >= _ctx->scroll_top_margin * _ctx->cols; i--) {
-        if (i == (size_t)-1) {
+        if (i == (Size)-1) {
             break;
         }
         struct flanterm_fb_char *c;
         struct flanterm_fb_queue_item *q = ctx->map[i];
-        if (q != NULL) {
+        if (q != null) {
             c = &q->c;
         } else {
             c = &ctx->grid[i];
@@ -570,7 +568,7 @@ static void flanterm_fb_revscroll(struct flanterm_context *_ctx) {
     empty.c  = ' ';
     empty.fg = ctx->text_fg;
     empty.bg = ctx->text_bg;
-    for (size_t i = 0; i < _ctx->cols; i++) {
+    for (Size i = 0; i < _ctx->cols; i++) {
         push_to_queue(_ctx, &empty, i, _ctx->scroll_top_margin);
     }
 }
@@ -578,11 +576,11 @@ static void flanterm_fb_revscroll(struct flanterm_context *_ctx) {
 static void flanterm_fb_scroll(struct flanterm_context *_ctx) {
     struct flanterm_fb_context *ctx = (void *)_ctx;
 
-    for (size_t i = (_ctx->scroll_top_margin + 1) * _ctx->cols;
+    for (Size i = (_ctx->scroll_top_margin + 1) * _ctx->cols;
          i < _ctx->scroll_bottom_margin * _ctx->cols; i++) {
         struct flanterm_fb_char *c;
         struct flanterm_fb_queue_item *q = ctx->map[i];
-        if (q != NULL) {
+        if (q != null) {
             c = &q->c;
         } else {
             c = &ctx->grid[i];
@@ -595,7 +593,7 @@ static void flanterm_fb_scroll(struct flanterm_context *_ctx) {
     empty.c  = ' ';
     empty.fg = ctx->text_fg;
     empty.bg = ctx->text_bg;
-    for (size_t i = 0; i < _ctx->cols; i++) {
+    for (Size i = 0; i < _ctx->cols; i++) {
         push_to_queue(_ctx, &empty, i, _ctx->scroll_bottom_margin - 1);
     }
 }
@@ -607,7 +605,7 @@ static void flanterm_fb_clear(struct flanterm_context *_ctx, Bool move) {
     empty.c  = ' ';
     empty.fg = ctx->text_fg;
     empty.bg = ctx->text_bg;
-    for (size_t i = 0; i < _ctx->rows * _ctx->cols; i++) {
+    for (Size i = 0; i < _ctx->rows * _ctx->cols; i++) {
         push_to_queue(_ctx, &empty, i % _ctx->cols, i / _ctx->cols);
     }
 
@@ -617,7 +615,7 @@ static void flanterm_fb_clear(struct flanterm_context *_ctx, Bool move) {
     }
 }
 
-static void flanterm_fb_set_cursor_pos(struct flanterm_context *_ctx, size_t x, size_t y) {
+static void flanterm_fb_set_cursor_pos(struct flanterm_context *_ctx, Size x, Size y) {
     struct flanterm_fb_context *ctx = (void *)_ctx;
 
     if (x >= _ctx->cols) {
@@ -638,14 +636,14 @@ static void flanterm_fb_set_cursor_pos(struct flanterm_context *_ctx, size_t x, 
     ctx->cursor_y = y;
 }
 
-static void flanterm_fb_get_cursor_pos(struct flanterm_context *_ctx, size_t *x, size_t *y) {
+static void flanterm_fb_get_cursor_pos(struct flanterm_context *_ctx, Size *x, Size *y) {
     struct flanterm_fb_context *ctx = (void *)_ctx;
 
     *x = ctx->cursor_x >= _ctx->cols ? _ctx->cols - 1 : ctx->cursor_x;
     *y = ctx->cursor_y >= _ctx->rows ? _ctx->rows - 1 : ctx->cursor_y;
 }
 
-static void flanterm_fb_move_character(struct flanterm_context *_ctx, size_t new_x, size_t new_y, size_t old_x, size_t old_y) {
+static void flanterm_fb_move_character(struct flanterm_context *_ctx, Size new_x, Size new_y, Size old_x, Size old_y) {
     struct flanterm_fb_context *ctx = (void *)_ctx;
 
     if (old_x >= _ctx->cols || old_y >= _ctx->rows
@@ -653,11 +651,11 @@ static void flanterm_fb_move_character(struct flanterm_context *_ctx, size_t new
         return;
     }
 
-    size_t i = old_x + old_y * _ctx->cols;
+    Size i = old_x + old_y * _ctx->cols;
 
     struct flanterm_fb_char *c;
     struct flanterm_fb_queue_item *q = ctx->map[i];
-    if (q != NULL) {
+    if (q != null) {
         c = &q->c;
     } else {
         c = &ctx->grid[i];
@@ -666,37 +664,37 @@ static void flanterm_fb_move_character(struct flanterm_context *_ctx, size_t new
     push_to_queue(_ctx, c, new_x, new_y);
 }
 
-static void flanterm_fb_set_text_fg(struct flanterm_context *_ctx, size_t fg) {
+static void flanterm_fb_set_text_fg(struct flanterm_context *_ctx, Size fg) {
     struct flanterm_fb_context *ctx = (void *)_ctx;
 
     ctx->text_fg = ctx->ansi_colours[fg];
 }
 
-static void flanterm_fb_set_text_bg(struct flanterm_context *_ctx, size_t bg) {
+static void flanterm_fb_set_text_bg(struct flanterm_context *_ctx, Size bg) {
     struct flanterm_fb_context *ctx = (void *)_ctx;
 
     ctx->text_bg = ctx->ansi_colours[bg];
 }
 
-static void flanterm_fb_set_text_fg_bright(struct flanterm_context *_ctx, size_t fg) {
+static void flanterm_fb_set_text_fg_bright(struct flanterm_context *_ctx, Size fg) {
     struct flanterm_fb_context *ctx = (void *)_ctx;
 
     ctx->text_fg = ctx->ansi_bright_colours[fg];
 }
 
-static void flanterm_fb_set_text_bg_bright(struct flanterm_context *_ctx, size_t bg) {
+static void flanterm_fb_set_text_bg_bright(struct flanterm_context *_ctx, Size bg) {
     struct flanterm_fb_context *ctx = (void *)_ctx;
 
     ctx->text_bg = ctx->ansi_bright_colours[bg];
 }
 
-static void flanterm_fb_set_text_fg_rgb(struct flanterm_context *_ctx, uint32_t fg) {
+static void flanterm_fb_set_text_fg_rgb(struct flanterm_context *_ctx, u32 fg) {
     struct flanterm_fb_context *ctx = (void *)_ctx;
 
     ctx->text_fg = convert_colour(_ctx, fg);
 }
 
-static void flanterm_fb_set_text_bg_rgb(struct flanterm_context *_ctx, uint32_t bg) {
+static void flanterm_fb_set_text_bg_rgb(struct flanterm_context *_ctx, u32 bg) {
     struct flanterm_fb_context *ctx = (void *)_ctx;
 
     ctx->text_bg = convert_colour(_ctx, bg);
@@ -733,22 +731,22 @@ static void draw_cursor(struct flanterm_context *_ctx) {
         return;
     }
 
-    size_t i = ctx->cursor_x + ctx->cursor_y * _ctx->cols;
+    Size i = ctx->cursor_x + ctx->cursor_y * _ctx->cols;
 
     struct flanterm_fb_char c;
     struct flanterm_fb_queue_item *q = ctx->map[i];
-    if (q != NULL) {
+    if (q != null) {
         c = q->c;
     } else {
         c = ctx->grid[i];
     }
-    uint32_t tmp = c.fg;
+    u32 tmp = c.fg;
     c.fg = c.bg;
     c.bg = tmp;
     plot_char(_ctx, &c, ctx->cursor_x, ctx->cursor_y);
-    if (q != NULL) {
+    if (q != null) {
         ctx->grid[i] = q->c;
-        ctx->map[i] = NULL;
+        ctx->map[i] = null;
     }
 }
 
@@ -759,10 +757,10 @@ static void flanterm_fb_double_buffer_flush(struct flanterm_context *_ctx) {
         draw_cursor(_ctx);
     }
 
-    for (size_t i = 0; i < ctx->queue_i; i++) {
+    for (Size i = 0; i < ctx->queue_i; i++) {
         struct flanterm_fb_queue_item *q = &ctx->queue[i];
-        size_t offset = q->y * _ctx->cols + q->x;
-        if (ctx->map[offset] == NULL) {
+        Size offset = q->y * _ctx->cols + q->x;
+        if (ctx->map[offset] == null) {
             continue;
         }
         #ifdef FLANTERM_FB_ENABLE_MASKING
@@ -776,7 +774,7 @@ static void flanterm_fb_double_buffer_flush(struct flanterm_context *_ctx) {
             plot_char(_ctx, &q->c, q->x, q->y);
         #endif
         ctx->grid[offset] = q->c;
-        ctx->map[offset] = NULL;
+        ctx->map[offset] = null;
     }
 
     if ((ctx->old_cursor_x != ctx->cursor_x || ctx->old_cursor_y != ctx->cursor_y) || _ctx->cursor_enabled == false) {
@@ -791,7 +789,7 @@ static void flanterm_fb_double_buffer_flush(struct flanterm_context *_ctx) {
     ctx->queue_i = 0;
 }
 
-static void flanterm_fb_raw_putchar(struct flanterm_context *_ctx, uint8_t c) {
+static void flanterm_fb_raw_putchar(struct flanterm_context *_ctx, u8 c) {
     struct flanterm_fb_context *ctx = (void *)_ctx;
 
     if (ctx->cursor_x >= _ctx->cols && (ctx->cursor_y < _ctx->scroll_bottom_margin - 1 || _ctx->scroll_enabled)) {
@@ -817,22 +815,22 @@ static void flanterm_fb_full_refresh(struct flanterm_context *_ctx) {
     struct flanterm_fb_context *ctx = (void *)_ctx;
 
 #ifdef FLANTERM_FB_DISABLE_CANVAS
-    uint32_t default_bg = ctx->default_bg;
+    u32 default_bg = ctx->default_bg;
 #endif
 
-    for (size_t y = 0; y < ctx->height; y++) {
-        for (size_t x = 0; x < ctx->width; x++) {
+    for (Size y = 0; y < ctx->height; y++) {
+        for (Size x = 0; x < ctx->width; x++) {
 #ifndef FLANTERM_FB_DISABLE_CANVAS
-            ctx->framebuffer[y * (ctx->pitch / sizeof(uint32_t)) + x] = ctx->canvas[y * ctx->width + x];
+            ctx->framebuffer[y * (ctx->pitch / sizeof(u32)) + x] = ctx->canvas[y * ctx->width + x];
 #else
-            ctx->framebuffer[y * (ctx->pitch / sizeof(uint32_t)) + x] = default_bg;
+            ctx->framebuffer[y * (ctx->pitch / sizeof(u32)) + x] = default_bg;
 #endif
         }
     }
 
-    for (size_t i = 0; i < (size_t)_ctx->rows * _ctx->cols; i++) {
-        size_t x = i % _ctx->cols;
-        size_t y = i / _ctx->cols;
+    for (Size i = 0; i < (Size)_ctx->rows * _ctx->cols; i++) {
+        Size x = i % _ctx->cols;
+        Size y = i / _ctx->cols;
 
         plot_char(_ctx, &ctx->grid[i], x, y);
     }
@@ -842,10 +840,10 @@ static void flanterm_fb_full_refresh(struct flanterm_context *_ctx) {
     }
 }
 
-static void flanterm_fb_deinit(struct flanterm_context *_ctx, void (*_free)(void *, size_t)) {
+static void flanterm_fb_deinit(struct flanterm_context *_ctx, void (*_free)(void *, Size)) {
     struct flanterm_fb_context *ctx = (void *)_ctx;
 
-    if (_free == NULL) {
+    if (_free == null) {
         return;
     }
 
@@ -863,45 +861,45 @@ static void flanterm_fb_deinit(struct flanterm_context *_ctx, void (*_free)(void
 }
 
 struct flanterm_context *flanterm_fb_init(
-    void *(*_malloc)(size_t),
-    void (*_free)(void *, size_t),
-    uint32_t *framebuffer, size_t width, size_t height, size_t pitch,
+    void *(*_malloc)(Size),
+    void (*_free)(void *, Size),
+    u32 *framebuffer, Size width, Size height, Size pitch,
 #ifdef FLANTERM_FB_SUPPORT_BPP
-    uint8_t red_mask_size, uint8_t red_mask_shift,
-    uint8_t green_mask_size, uint8_t green_mask_shift,
-    uint8_t blue_mask_size, uint8_t blue_mask_shift,
+    u8 red_mask_size, u8 red_mask_shift,
+    u8 green_mask_size, u8 green_mask_shift,
+    u8 blue_mask_size, u8 blue_mask_shift,
 #endif
 #ifndef FLANTERM_FB_DISABLE_CANVAS
-    uint32_t *canvas,
+    u32 *canvas,
 #endif
-    uint32_t *ansi_colours, uint32_t *ansi_bright_colours,
-    uint32_t *default_bg, uint32_t *default_fg,
-    uint32_t *default_bg_bright, uint32_t *default_fg_bright,
-    void *font, size_t font_width, size_t font_height, size_t font_spacing,
-    size_t font_scale_x, size_t font_scale_y,
-    size_t margin
+    u32 *ansi_colours, u32 *ansi_bright_colours,
+    u32 *default_bg, u32 *default_fg,
+    u32 *default_bg_bright, u32 *default_fg_bright,
+    void *font, Size font_width, Size font_height, Size font_spacing,
+    Size font_scale_x, Size font_scale_y,
+    Size margin
 ) {
 #ifndef FLANTERM_FB_DISABLE_BUMP_ALLOC
-    size_t orig_bump_alloc_ptr = bump_alloc_ptr;
+    Size orig_bump_alloc_ptr = bump_alloc_ptr;
 #endif
 
 #ifdef FLANTERM_FB_SUPPORT_BPP
     if (red_mask_size < 8 || red_mask_size != green_mask_size || red_mask_size != blue_mask_size) {
-        return NULL;
+        return null;
     }
 #endif
 
-    if (_malloc == NULL) {
+    if (_malloc == null) {
 #ifndef FLANTERM_FB_DISABLE_BUMP_ALLOC
         _malloc = bump_alloc;
 #else
-        return NULL;
+        return null;
 #endif
     }
 
-    struct flanterm_fb_context *ctx = NULL;
+    struct flanterm_fb_context *ctx = null;
     ctx = _malloc(sizeof(struct flanterm_fb_context));
-    if (ctx == NULL) {
+    if (ctx == null) {
         goto fail;
     }
 
@@ -917,8 +915,8 @@ struct flanterm_context *flanterm_fb_init(
     ctx->blue_mask_shift = blue_mask_shift + (blue_mask_size - 8);
 #endif
 
-    if (ansi_colours != NULL) {
-        for (size_t i = 0; i < 8; i++) {
+    if (ansi_colours != null) {
+        for (Size i = 0; i < 8; i++) {
             ctx->ansi_colours[i] = convert_colour(_ctx, ansi_colours[i]);
         }
     } else {
@@ -932,8 +930,8 @@ struct flanterm_context *flanterm_fb_init(
         ctx->ansi_colours[7] = convert_colour(_ctx, 0x00aaaaaa); // grey
     }
 
-    if (ansi_bright_colours != NULL) {
-        for (size_t i = 0; i < 8; i++) {
+    if (ansi_bright_colours != null) {
+        for (Size i = 0; i < 8; i++) {
             ctx->ansi_bright_colours[i] = convert_colour(_ctx, ansi_bright_colours[i]);
         }
     } else {
@@ -947,25 +945,25 @@ struct flanterm_context *flanterm_fb_init(
         ctx->ansi_bright_colours[7] = convert_colour(_ctx, 0x00ffffff); // grey
     }
 
-    if (default_bg != NULL) {
+    if (default_bg != null) {
         ctx->default_bg = convert_colour(_ctx, *default_bg);
     } else {
         ctx->default_bg = 0x00000000; // background (black)
     }
 
-    if (default_fg != NULL) {
+    if (default_fg != null) {
         ctx->default_fg = convert_colour(_ctx, *default_fg);
     } else {
         ctx->default_fg = convert_colour(_ctx, 0x00aaaaaa); // foreground (grey)
     }
 
-    if (default_bg_bright != NULL) {
+    if (default_bg_bright != null) {
         ctx->default_bg_bright = convert_colour(_ctx, *default_bg_bright);
     } else {
         ctx->default_bg_bright = convert_colour(_ctx, 0x00555555); // background (black)
     }
 
-    if (default_fg_bright != NULL) {
+    if (default_fg_bright != null) {
         ctx->default_fg_bright = convert_colour(_ctx, *default_fg_bright);
     } else {
         ctx->default_fg_bright = convert_colour(_ctx, 0x00ffffff); // foreground (grey)
@@ -981,12 +979,12 @@ struct flanterm_context *flanterm_fb_init(
 
 #define FONT_BYTES ((font_width * font_height * FLANTERM_FB_FONT_GLYPHS) / 8)
 
-    if (font != NULL) {
+    if (font != null) {
         ctx->font_width = font_width;
         ctx->font_height = font_height;
         ctx->font_bits_size = FONT_BYTES;
         ctx->font_bits = _malloc(ctx->font_bits_size);
-        if (ctx->font_bits == NULL) {
+        if (ctx->font_bits == null) {
             goto fail;
         }
         memcpy(ctx->font_bits, font, ctx->font_bits_size);
@@ -996,7 +994,7 @@ struct flanterm_context *flanterm_fb_init(
         ctx->font_bits_size = FONT_BYTES;
         font_spacing = 1;
         ctx->font_bits = _malloc(ctx->font_bits_size);
-        if (ctx->font_bits == NULL) {
+        if (ctx->font_bits == null) {
             goto fail;
         }
         memcpy(ctx->font_bits, builtin_font, ctx->font_bits_size);
@@ -1006,21 +1004,21 @@ struct flanterm_context *flanterm_fb_init(
 
     ctx->font_width += font_spacing;
 
-    ctx->font_bool_size = FLANTERM_FB_FONT_GLYPHS * font_height * ctx->font_width * sizeof(bool);
+    ctx->font_bool_size = FLANTERM_FB_FONT_GLYPHS * font_height * ctx->font_width * sizeof(Bool);
     ctx->font_bool = _malloc(ctx->font_bool_size);
-    if (ctx->font_bool == NULL) {
+    if (ctx->font_bool == null) {
         goto fail;
     }
 
-    for (size_t i = 0; i < FLANTERM_FB_FONT_GLYPHS; i++) {
-        uint8_t *glyph = &ctx->font_bits[i * font_height];
+    for (Size i = 0; i < FLANTERM_FB_FONT_GLYPHS; i++) {
+        u8 *glyph = &ctx->font_bits[i * font_height];
 
-        for (size_t y = 0; y < font_height; y++) {
+        for (Size y = 0; y < font_height; y++) {
             // NOTE: the characters in VGA fonts are always one byte wide.
             // 9 dot wide fonts have 8 dots and one empty column, except
             // characters 0xC0-0xDF replicate column 9.
-            for (size_t x = 0; x < 8; x++) {
-                size_t offset = i * font_height * ctx->font_width + y * ctx->font_width + x;
+            for (Size x = 0; x < 8; x++) {
+                Size offset = i * font_height * ctx->font_width + y * ctx->font_width + x;
 
                 if ((glyph[y] & (0x80 >> x))) {
                     ctx->font_bool[offset] = true;
@@ -1029,8 +1027,8 @@ struct flanterm_context *flanterm_fb_init(
                 }
             }
             // fill columns above 8 like VGA Line Graphics Mode does
-            for (size_t x = 8; x < ctx->font_width; x++) {
-                size_t offset = i * font_height * ctx->font_width + y * ctx->font_width + x;
+            for (Size x = 8; x < ctx->font_width; x++) {
+                Size offset = i * font_height * ctx->font_width + y * ctx->font_width + x;
 
                 if (i >= 0xc0 && i <= 0xdf) {
                     ctx->font_bool[offset] = (glyph[y] & 1);
@@ -1055,10 +1053,10 @@ struct flanterm_context *flanterm_fb_init(
 
     ctx->grid_size = _ctx->rows * _ctx->cols * sizeof(struct flanterm_fb_char);
     ctx->grid = _malloc(ctx->grid_size);
-    if (ctx->grid == NULL) {
+    if (ctx->grid == null) {
         goto fail;
     }
-    for (size_t i = 0; i < _ctx->rows * _ctx->cols; i++) {
+    for (Size i = 0; i < _ctx->rows * _ctx->cols; i++) {
         ctx->grid[i].c = ' ';
         ctx->grid[i].fg = ctx->text_fg;
         ctx->grid[i].bg = ctx->text_bg;
@@ -1066,7 +1064,7 @@ struct flanterm_context *flanterm_fb_init(
 
     ctx->queue_size = _ctx->rows * _ctx->cols * sizeof(struct flanterm_fb_queue_item);
     ctx->queue = _malloc(ctx->queue_size);
-    if (ctx->queue == NULL) {
+    if (ctx->queue == null) {
         goto fail;
     }
     ctx->queue_i = 0;
@@ -1074,23 +1072,23 @@ struct flanterm_context *flanterm_fb_init(
 
     ctx->map_size = _ctx->rows * _ctx->cols * sizeof(struct flanterm_fb_queue_item *);
     ctx->map = _malloc(ctx->map_size);
-    if (ctx->map == NULL) {
+    if (ctx->map == null) {
         goto fail;
     }
     memset(ctx->map, 0, ctx->map_size);
 
 #ifndef FLANTERM_FB_DISABLE_CANVAS
-    ctx->canvas_size = ctx->width * ctx->height * sizeof(uint32_t);
+    ctx->canvas_size = ctx->width * ctx->height * sizeof(u32);
     ctx->canvas = _malloc(ctx->canvas_size);
-    if (ctx->canvas == NULL) {
+    if (ctx->canvas == null) {
         goto fail;
     }
-    if (canvas != NULL) {
-        for (size_t i = 0; i < ctx->width * ctx->height; i++) {
+    if (canvas != null) {
+        for (Size i = 0; i < ctx->width * ctx->height; i++) {
             ctx->canvas[i] = convert_colour(_ctx, canvas[i]);
         }
     } else {
-        for (size_t i = 0; i < ctx->width * ctx->height; i++) {
+        for (Size i = 0; i < ctx->width * ctx->height; i++) {
             ctx->canvas[i] = ctx->default_bg;
         }
     }
@@ -1129,37 +1127,37 @@ fail:
 #ifndef FLANTERM_FB_DISABLE_BUMP_ALLOC
     if (_malloc == bump_alloc) {
         bump_alloc_ptr = orig_bump_alloc_ptr;
-        return NULL;
+        return null;
     }
 #endif
 
-    if (_free == NULL) {
-        return NULL;
+    if (_free == null) {
+        return null;
     }
 
 #ifndef FLANTERM_FB_DISABLE_CANVAS
-    if (ctx->canvas != NULL) {
+    if (ctx->canvas != null) {
         _free(ctx->canvas, ctx->canvas_size);
     }
 #endif
-    if (ctx->map != NULL) {
+    if (ctx->map != null) {
         _free(ctx->map, ctx->map_size);
     }
-    if (ctx->queue != NULL) {
+    if (ctx->queue != null) {
         _free(ctx->queue, ctx->queue_size);
     }
-    if (ctx->grid != NULL) {
+    if (ctx->grid != null) {
         _free(ctx->grid, ctx->grid_size);
     }
-    if (ctx->font_bool != NULL) {
+    if (ctx->font_bool != null) {
         _free(ctx->font_bool, ctx->font_bool_size);
     }
-    if (ctx->font_bits != NULL) {
+    if (ctx->font_bits != null) {
         _free(ctx->font_bits, ctx->font_bits_size);
     }
-    if (ctx != NULL) {
+    if (ctx != null) {
         _free(ctx, sizeof(struct flanterm_fb_context));
     }
 
-    return NULL;
+    return null;
 }

@@ -92,7 +92,7 @@ $(IMAGE_NAME).iso: $(LIMINE) kernel
 
 .PHONY: clean
 clean:
-	rm -rf iso_root $(IMAGE_NAME).iso $(IMAGE_NAME).hdd
+	rm -rf $(IMAGE_NAME).iso $(IMAGE_NAME).hdd
 	$(MAKE) -C kernel clean
 
 .PHONY: distclean
