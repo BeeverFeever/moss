@@ -446,7 +446,7 @@ static void plot_char(struct flanterm_context *_ctx, struct flanterm_fb_char *c,
     x = ctx->offset_x + x * ctx->glyph_width;
     y = ctx->offset_y + y * ctx->glyph_height;
 
-    Bool *glyph = &ctx->font_bool[c->c * ctx->font_height * ctx->font_width];
+    bool *glyph = &ctx->font_bool[c->c * ctx->font_height * ctx->font_width];
     // naming: fx,fy for font coordinates, gx,gy for glyph coordinates
     for (Size gy = 0; gy < ctx->glyph_height; gy++) {
         u8 fy = gy / ctx->font_scale_y;
@@ -457,7 +457,7 @@ static void plot_char(struct flanterm_context *_ctx, struct flanterm_fb_char *c,
 #endif
 
         for (Size fx = 0; fx < ctx->font_width; fx++) {
-            Bool draw = glyph[fy * ctx->font_width + fx];
+            bool draw = glyph[fy * ctx->font_width + fx];
             for (Size i = 0; i < ctx->font_scale_x; i++) {
                 Size gx = ctx->font_scale_x * fx + i;
 #ifndef FLANTERM_FB_DISABLE_CANVAS
@@ -488,8 +488,8 @@ static void plot_char_masked(struct flanterm_context *_ctx, struct flanterm_fb_c
     u32 default_bg = ctx->default_bg;
 #endif
 
-    Bool *new_glyph = &ctx->font_bool[c->c * ctx->font_height * ctx->font_width];
-    Bool *old_glyph = &ctx->font_bool[old->c * ctx->font_height * ctx->font_width];
+    bool *new_glyph = &ctx->font_bool[c->c * ctx->font_height * ctx->font_width];
+    bool *old_glyph = &ctx->font_bool[old->c * ctx->font_height * ctx->font_width];
     for (Size gy = 0; gy < ctx->glyph_height; gy++) {
         u8 fy = gy / ctx->font_scale_y;
         volatile u32 *fb_line = ctx->framebuffer + x + (y + gy) * (ctx->pitch / 4);
@@ -497,8 +497,8 @@ static void plot_char_masked(struct flanterm_context *_ctx, struct flanterm_fb_c
         u32 *canvas_line = ctx->canvas + x + (y + gy) * ctx->width;
 #endif
         for (Size fx = 0; fx < ctx->font_width; fx++) {
-            Bool old_draw = old_glyph[fy * ctx->font_width + fx];
-            Bool new_draw = new_glyph[fy * ctx->font_width + fx];
+            bool old_draw = old_glyph[fy * ctx->font_width + fx];
+            bool new_draw = new_glyph[fy * ctx->font_width + fx];
             if (old_draw == new_draw)
                 continue;
             for (Size i = 0; i < ctx->font_scale_x; i++) {
@@ -517,7 +517,7 @@ static void plot_char_masked(struct flanterm_context *_ctx, struct flanterm_fb_c
 }
 #endif
 
-static inline Bool compare_char(struct flanterm_fb_char *a, struct flanterm_fb_char *b) {
+static inline bool compare_char(struct flanterm_fb_char *a, struct flanterm_fb_char *b) {
     return !(a->c != b->c || a->bg != b->bg || a->fg != b->fg);
 }
 
@@ -598,7 +598,7 @@ static void flanterm_fb_scroll(struct flanterm_context *_ctx) {
     }
 }
 
-static void flanterm_fb_clear(struct flanterm_context *_ctx, Bool move) {
+static void flanterm_fb_clear(struct flanterm_context *_ctx, bool move) {
     struct flanterm_fb_context *ctx = (void *)_ctx;
 
     struct flanterm_fb_char empty;
@@ -1004,7 +1004,7 @@ struct flanterm_context *flanterm_fb_init(
 
     ctx->font_width += font_spacing;
 
-    ctx->font_bool_size = FLANTERM_FB_FONT_GLYPHS * font_height * ctx->font_width * sizeof(Bool);
+    ctx->font_bool_size = FLANTERM_FB_FONT_GLYPHS * font_height * ctx->font_width * sizeof(bool);
     ctx->font_bool = _malloc(ctx->font_bool_size);
     if (ctx->font_bool == null) {
         goto fail;

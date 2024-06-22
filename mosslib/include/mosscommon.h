@@ -12,12 +12,9 @@
 #define countof(a)    (Size)(sizeof(a) / sizeof(*(a)))
 #define lengthof(s)   (countof(s) - 1)
 
-#define null    ((void*)0)
-#define nullptr ((void*)0)
+#define asm __asm__
+#define null nullptr
 
-typedef unsigned int  Size;
-
-typedef char        Byte;
 
 typedef  __UINT8_TYPE__         u8;
 typedef  __UINT16_TYPE__        u16;
@@ -51,29 +48,28 @@ typedef  __INT_FAST64_TYPE__    iFast64;
 
 typedef  __UINTPTR_TYPE__       uintptr;
 typedef  __INTPTR_TYPE__        intptr;
+typedef  __PTRDIFF_TYPE__       ptrdiff;
 
 typedef  __UINTMAX_TYPE__       uintmax;
 typedef  __INTMAX_TYPE__        intmax;
 
-typedef enum {
-    false = 0,
-    true = 1
-} Bool;
+typedef i32 Size;
+typedef u32 Usize;
+typedef i64 Lsize;
+typedef u64 Lusize;
+typedef char Byte;
+
+// typedef enum {
+//     false = 0,
+//     true = 1
+// } Bool;
 
 #define s8(s) (s8){ (Byte*)s, lengthof(s) }
+#define s8f(s,n) (s8){ (Byte[n])s, lengthof(s) }
 typedef struct {
-    Byte* str;
+    Byte* ptr;
     Size length;
 } s8;
 
-// returns -1 if no match 0 if they match
-// int s8cmp(s8 a, s8 b) {
-//    // obviously not the same if they aren't the same length
-//    if (a.length != b.length) return -1;
-//    for (Size i = 0; i < a.length; i++) {
-//       if (a.str[i] != b.str[i]) return -1;
-//    }
-//    return 0;
-// }
 
 #endif // MOSS_DEFINES_H

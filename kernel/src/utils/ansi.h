@@ -1,8 +1,8 @@
 #ifndef MOSS_KERN_ANSI_H
 #define MOSS_KERN_ANSI_H
 
-#define ANSI_STR_HELPER(s) #s
-#define ANSI_STR(s) ANSI_STR_HELPER(s)
+// #define ANSI_STR_HELPER(s) #s
+// #define ANSI_STR(s) ANSI_STR_HELPER(s)
 
 #define reset(r)        "\x1b["r"m"
 #define colour(c)       "\x1b[0;"c"m"

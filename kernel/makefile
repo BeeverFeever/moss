@@ -1,10 +1,11 @@
 KERNEL := moss
 
-CC := ../tools/path/bin/x86_64-moss-gcc
-LD := ../tools/path/bin/x86_64-moss-ld
+COMPILER := ../tools/path/bin/x86_64-moss-gcc
+LINKER := ../tools/path/bin/x86_64-moss-ld
+ASSEMBLER := nasm
 BUILDDIR := ./build
 
-CFLAGS := -g -c \
+CFLAGS := -std=c23 -g -c \
 			 -include ../mosslib/include/mosscommon.h \
 			 -Isrc \
 			 -I../extern \
@@ -21,13 +22,10 @@ CFLAGS := -g -c \
 			 -m64 \
 			 -mno-mmx \
 			 -mno-80387 \
-			 -mno-sse \
-			 -mno-sse2 \
 			 -mno-red-zone
 
-FASMFLAGS := -F dwarf -g \
-    -Wall \
-    -f elf64
+FASMFLAGS := -Wall \
+				 -f elf64
 
 LDFLAGS := \
     -m elf_x86_64_moss \
@@ -42,30 +40,23 @@ LDFLAGS := \
 CFILES := $(shell cd src && find -L * -type f -name '*.c')
 FASMFILES := $(shell cd src && find -L * -type f -name '*.asm')
 
-OBJ := $(addprefix $(BUILDDIR)/obj/,$(CFILES:.c=.c.o) $(ASFILES:.S=.S.o) $(FASMFILES:.asm=.asm.o))
-HEADER_DEPS := $(addprefix $(BUILDDIR)/obj/,$(CFILES:.c=.c.d) $(ASFILES:.S=.S.d))
+OBJS := $(addprefix $(BUILDDIR)/obj/,$(CFILES:.c=.o) $(FASMFILES:.asm=.asm.o))
 
-# Default target.
 .PHONY: all
 all: $(BUILDDIR)/bin/$(KERNEL)
 
-# extern/limine.h:
-# 	curl -Lo $@ https://github.com/limine-bootloader/limine/raw/trunk/limine.h
-
-# Link rules for the final kernel executable.
-$(BUILDDIR)/bin/$(KERNEL): linker.ld $(OBJ)
+$(BUILDDIR)/bin/$(KERNEL): linker.ld $(OBJS)
 	mkdir -p "$$(dirname $@)"
-	$(LD) $(OBJ) $(LDFLAGS) -o $@
+	$(LINKER) $(OBJS) $(LDFLAGS) -o $@
 
-$(BUILDDIR)/obj/%.c.o: src/%.c # bootloader/limine.h
+$(BUILDDIR)/obj/%.o: src/%.c 
 	mkdir -p "$$(dirname $@)"
-	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
+	$(COMPILER) $(CFLAGS) $< -o $@
 
 $(BUILDDIR)/obj/%.asm.o: src/%.asm
 	mkdir -p "$$(dirname $@)"
-	fasm $(FASMFLAGS) $< -o $@
+	$(ASSEMBLER) $(FASMFLAGS) $< -o $@
 
-# Remove object files and the final executable.
 .PHONY: clean
 clean:
 	rm -rf $(BUILDDIR)

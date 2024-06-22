@@ -18,24 +18,17 @@ run: all run-uefi
 .PHONY: all
 all: $(IMAGE_NAME).iso
 
-.PHONY: all-hdd
-all-hdd: $(IMAGE_NAME).hdd
-
-# .PHONY: qemu
-# qemu: $(IMAGE_NAME).iso
-# 	qemu-system-x86_64 -M q35 -m 2G -cdrom $(IMAGE_NAME).iso -boot d
-
 .PHONY: run-uefi
 run-uefi: $(OVMF) $(IMAGE_NAME).iso
-	qemu-system-x86_64 -M q35 -m 2G -bios $(OVMF)/OVMF.fd -cdrom $(IMAGE_NAME).iso -boot d -monitor stdio -vga std
+	qemu-system-x86_64 -M q35 -m 2G -bios $(OVMF)/OVMF.fd -cdrom $(IMAGE_NAME).iso -boot d -monitor stdio -parallel none
 
-.PHONY: run-hdd
-run-hdd: $(IMAGE_NAME).hdd
-	qemu-system-x86_64 -M q35 -m 2G -hda $(IMAGE_NAME).hdd
-
-.PHONY: run-hdd-uefi
-run-hdd-uefi: $(OVMF) $(IMAGE_NAME).hdd
-	qemu-system-x86_64 -M q35 -m 2G -bios $(OVMF)/OVMF.fd -hda $(IMAGE_NAME).hdd
+# no support for hdd anymore, if it becomes useful in the future i can triffle through the old commits
+# and find the build target for it
+# .PHONY: run-hdd
+# run-hdd: $(IMAGE_NAME).hdd
+# 	qemu-system-x86_64 -M q35 -m 2G -hda $(IMAGE_NAME).hdd
+# .PHONY: all-hdd
+# all-hdd: $(IMAGE_NAME).hdd
 
 $(OVMF):
 	mkdir -p $(OVMF)

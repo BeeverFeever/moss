@@ -4,10 +4,12 @@
 #include <limine/limine.h>
 
 typedef struct {
-   volatile struct limine_framebuffer_response* framebuffer;
+   volatile struct limine_framebuffer_response* fb;
    volatile struct limine_hhdm_response* hhdm;
    volatile struct limine_kernel_address_response* kernel_address;
    volatile struct limine_memmap_response* memmap;
+
+   Lusize totalUsableMemory;
 } Bootloader;
 
 Bootloader bootloader;

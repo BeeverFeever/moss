@@ -327,7 +327,7 @@ set_bg_bright:
 
         // 256/RGB
         else if (ctx->esc_values[i] == 38 || ctx->esc_values[i] == 48) {
-            Bool fg = ctx->esc_values[i] == 38;
+            bool fg = ctx->esc_values[i] == 38;
 
             i++;
             if (i >= ctx->esc_values_i) {
@@ -387,7 +387,7 @@ static void dec_private_parse(struct flanterm_context *ctx, u8 c) {
         return;
     }
 
-    Bool set;
+    bool set;
 
     switch (c) {
         case 'h':
@@ -429,7 +429,7 @@ static void mode_toggle(struct flanterm_context *ctx, u8 c) {
         return;
     }
 
-    Bool set;
+    bool set;
 
     switch (c) {
         case 'h':
@@ -526,7 +526,7 @@ static void control_sequence_parse(struct flanterm_context *ctx, u8 c) {
         goto cleanup;
     }
 
-    Bool r = ctx->scroll_enabled;
+    bool r = ctx->scroll_enabled;
     ctx->scroll_enabled = false;
     Size x, y;
     ctx->get_cursor_pos(ctx, &x, &y);
@@ -540,7 +540,7 @@ static void control_sequence_parse(struct flanterm_context *ctx, u8 c) {
                 ctx->esc_values[0] = y;
             Size orig_y = y;
             Size dest_y = y - ctx->esc_values[0];
-            Bool will_be_in_scroll_region = false;
+            bool will_be_in_scroll_region = false;
             if ((ctx->scroll_top_margin >= dest_y && ctx->scroll_top_margin <= orig_y)
              || (ctx->scroll_bottom_margin >= dest_y && ctx->scroll_bottom_margin <= orig_y)) {
                 will_be_in_scroll_region = true;
@@ -560,7 +560,7 @@ static void control_sequence_parse(struct flanterm_context *ctx, u8 c) {
                 ctx->esc_values[0] = (ctx->rows - 1) - y;
             Size orig_y = y;
             Size dest_y = y + ctx->esc_values[0];
-            Bool will_be_in_scroll_region = false;
+            bool will_be_in_scroll_region = false;
             if ((ctx->scroll_top_margin >= orig_y && ctx->scroll_top_margin <= dest_y)
              || (ctx->scroll_bottom_margin >= orig_y && ctx->scroll_bottom_margin <= dest_y)) {
                 will_be_in_scroll_region = true;
@@ -661,7 +661,7 @@ static void control_sequence_parse(struct flanterm_context *ctx, u8 c) {
                 }
                 case 1: {
                     ctx->set_cursor_pos(ctx, 0, 0);
-                    Bool b = false;
+                    bool b = false;
                     for (Size yc = 0; yc < ctx->rows; yc++) {
                         for (Size xc = 0; xc < ctx->cols; xc++) {
                             ctx->raw_putchar(ctx, ' ');
@@ -879,7 +879,7 @@ is_csi:
     ctx->escape = false;
 }
 
-static Bool dec_special_print(struct flanterm_context *ctx, u8 c) {
+static bool dec_special_print(struct flanterm_context *ctx, u8 c) {
 #define FLANTERM_DEC_SPCL_PRN(C) ctx->raw_putchar(ctx, (C)); return true;
     switch (c) {
         case '`': FLANTERM_DEC_SPCL_PRN(0x04)

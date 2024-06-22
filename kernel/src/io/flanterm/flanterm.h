@@ -57,21 +57,21 @@ struct flanterm_context {
     /* internal use */
 
     Size tab_size;
-    Bool autoflush;
-    Bool cursor_enabled;
-    Bool scroll_enabled;
-    Bool control_sequence;
-    Bool csi;
-    Bool escape;
-    Bool osc;
-    Bool osc_escape;
-    Bool rrr;
-    Bool discard_next;
-    Bool bold;
-    Bool bg_bold;
-    Bool reverse_video;
-    Bool dec_private;
-    Bool insert_mode;
+    bool autoflush;
+    bool cursor_enabled;
+    bool scroll_enabled;
+    bool control_sequence;
+    bool csi;
+    bool escape;
+    bool osc;
+    bool osc_escape;
+    bool rrr;
+    bool discard_next;
+    bool bold;
+    bool bg_bold;
+    bool reverse_video;
+    bool dec_private;
+    bool insert_mode;
     u64 code_point;
     Size unicode_remaining;
     u8 g_select;
@@ -87,9 +87,9 @@ struct flanterm_context {
     Size scroll_bottom_margin;
     u32 esc_values[FLANTERM_MAX_ESC_VALUES];
     u64 oob_output;
-    Bool saved_state_bold;
-    Bool saved_state_bg_bold;
-    Bool saved_state_reverse_video;
+    bool saved_state_bold;
+    bool saved_state_bg_bold;
+    bool saved_state_reverse_video;
     Size saved_state_current_charset;
     Size saved_state_current_primary;
     Size saved_state_current_bg;
@@ -99,7 +99,7 @@ struct flanterm_context {
     Size rows, cols;
 
     void (*raw_putchar)(struct flanterm_context *, u8 c);
-    void (*clear)(struct flanterm_context *, Bool move);
+    void (*clear)(struct flanterm_context *, bool move);
     void (*set_cursor_pos)(struct flanterm_context *, Size x, Size y);
     void (*get_cursor_pos)(struct flanterm_context *, Size *x, Size *y);
     void (*set_text_fg)(struct flanterm_context *, Size fg);

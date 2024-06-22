@@ -77,7 +77,7 @@ struct flanterm_fb_context {
     Size font_bits_size;
     u8 *font_bits;
     Size font_bool_size;
-    Bool *font_bool;
+    bool *font_bool;
 
     u32 ansi_colours[8];
     u32 ansi_bright_colours[8];
