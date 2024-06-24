@@ -24,8 +24,7 @@ CFLAGS := -std=c23 -g -c \
 			 -mno-80387 \
 			 -mno-red-zone
 
-FASMFLAGS := -Wall \
-				 -f elf64
+FASMFLAGS := -f elf64
 
 LDFLAGS := \
     -m elf_x86_64_moss \

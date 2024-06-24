@@ -1,16 +1,10 @@
 IMAGE_NAME := moss
 
 # literally just to compile limine limine
-CC := tools/path/bin/x86_64-moss-gcc
-CFLAGS := -g -O2 -pipe
-CPPFLAGS :=
-LDFLAGS :=
-LIBS :=
+BUILDDIR := kernel/build
 
 OVMF := extern/ovmf
 LIMINE := extern/limine
-
-BUILDDIR := kernel/build
 
 .PHONY: run
 run: all run-uefi
@@ -20,7 +14,7 @@ all: $(IMAGE_NAME).iso
 
 .PHONY: run-uefi
 run-uefi: $(OVMF) $(IMAGE_NAME).iso
-	qemu-system-x86_64 -M q35 -m 2G -bios $(OVMF)/OVMF.fd -cdrom $(IMAGE_NAME).iso -boot d -monitor stdio -parallel none
+	qemu-system-x86_64 -M q35 -m 2G -bios $(OVMF)/OVMF.fd -cdrom $(IMAGE_NAME).iso
 
 # no support for hdd anymore, if it becomes useful in the future i can triffle through the old commits
 # and find the build target for it

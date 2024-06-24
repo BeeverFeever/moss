@@ -13,7 +13,7 @@
 #define lengthof(s)   (countof(s) - 1)
 
 #define asm __asm__
-#define null nullptr
+#define null nullptr // null doesnt have to yell at you
 
 
 typedef  __UINT8_TYPE__         u8;
@@ -55,14 +55,9 @@ typedef  __INTMAX_TYPE__        intmax;
 
 typedef i32 Size;
 typedef u32 Usize;
-typedef i64 Lsize;
+typedef i64 Lsize; // L stands for large since long typically means 32 bit
 typedef u64 Lusize;
-typedef char Byte;
-
-// typedef enum {
-//     false = 0,
-//     true = 1
-// } Bool;
+typedef u8  Byte;
 
 #define s8(s) (s8){ (Byte*)s, lengthof(s) }
 #define s8f(s,n) (s8){ (Byte[n])s, lengthof(s) }

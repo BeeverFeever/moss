@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MOSS_KERN_IDT_H
+#define MOSS_KERN_IDT_H
 
 typedef struct {
    u16 offsetLow;   // offset bits 0..15
@@ -12,7 +13,9 @@ typedef struct {
 
 typedef struct {
     u16 limit;
-    IDTEntry* base;
+    u64 base;
 } __attribute__((packed)) IDTR;
 
 void idt_init(void);
+
+#endif // MOSS_KERN_IDT_H
