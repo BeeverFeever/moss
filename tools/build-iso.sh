@@ -2,13 +2,18 @@
 
 set -xe
 
+if [[ $# == 0 ]]; then
+   echo "Image name must be first argument"
+   exit 1
+fi
+
 SCRIPTPATH=$(dirname "$0")
 cd "$SCRIPTPATH"
 
 SYSROOT=../sysroot
 KERNELDIR=../kernel/build
 LIMINE=../extern/limine
-IMAGE_NAME=moss
+IMAGE_NAME=$1
 
 mkdir -p "$SYSROOT"/boot
 cp -uv "$KERNELDIR"/bin/moss "$SYSROOT"/boot/
