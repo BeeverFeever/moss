@@ -13,9 +13,8 @@ cd "$SCRIPTPATH"
 SYSROOT=../sysroot
 KERNELDIR=../kernel/build
 LIMINE=../extern/limine
-IMAGE_NAME=$1
+IMAGE_NAME="$1"
 
-mkdir -p "$SYSROOT"/boot
 cp -uv "$KERNELDIR"/bin/moss "$SYSROOT"/boot/
 mkdir -p "$SYSROOT"/boot/limine
 cp -uv "$LIMINE"/limine-bios.sys "$LIMINE"/limine-bios-cd.bin \

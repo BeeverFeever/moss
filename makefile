@@ -1,7 +1,7 @@
 IMAGE_NAME := moss
 
-# literally just to compile limine limine
 BUILDDIR := kernel/build
+SYSROOT := sysroot
 
 OVMF := extern/ovmf
 LIMINE := extern/limine
@@ -14,7 +14,7 @@ all: $(IMAGE_NAME).iso
 
 .PHONY: run-uefi
 run-uefi: $(OVMF) $(IMAGE_NAME).iso
-	qemu-system-x86_64 -M q35 -m 2G -bios $(OVMF)/OVMF.fd -cdrom $(IMAGE_NAME).iso
+	qemu-system-x86_64 -M q35 -m 2G -bios $(OVMF)/OVMF.fd -cdrom $(IMAGE_NAME).iso -monitor stdio -enable-kvm -vga std
 
 # no support for hdd anymore, if it becomes useful in the future i can triffle through the old commits
 # and find the build target for it
@@ -41,27 +41,7 @@ mosslibc:
 	$(MAKE) -C mosslibc
 
 $(IMAGE_NAME).iso: $(LIMINE) kernel
-	./tools/build-iso.sh
-# $(IMAGE_NAME).iso: $(LIMINE) kernel
-# 	rm -rf iso_root
-# 	mkdir -p iso_root/boot
-# 	cp -v $(BUILDDIR)/bin/moss iso_root/boot/
-# 	mkdir -p iso_root/boot/limine
-# 	cp -v $(LIMINE)/limine-bios.sys $(LIMINE)/limine-bios-cd.bin \
-# 		$(LIMINE)/limine-uefi-cd.bin iso_root/boot/limine/
-#
-# 	mkdir -p iso_root/EFI/BOOT
-# 	cp -v $(LIMINE)/BOOTX64.EFI iso_root/EFI/BOOT/
-# 	cp -v $(LIMINE)/BOOTIA32.EFI iso_root/EFI/BOOT/
-#
-# 	xorriso -as mkisofs -b boot/limine/limine-bios-cd.bin \
-# 		-no-emul-boot -boot-load-size 4 -boot-info-table \
-# 		--efi-boot boot/limine/limine-uefi-cd.bin \
-# 		-efi-boot-part --efi-boot-image --protective-msdos-label \
-# 		iso_root -o $(IMAGE_NAME).iso
-#
-# 	./$(LIMINE)/limine bios-install $(IMAGE_NAME).iso
-# 	# rm -rf iso_root
+	./tools/build-iso.sh $(IMAGE_NAME)
 
 # $(IMAGE_NAME).hdd: $(LIMINE) kernel
 # 	rm -f $(IMAGE_NAME).hdd
@@ -79,9 +59,11 @@ $(IMAGE_NAME).iso: $(LIMINE) kernel
 
 .PHONY: clean
 clean:
+	rm $(SYSROOT)/boot/moss
 	rm -rf $(IMAGE_NAME).iso $(IMAGE_NAME).hdd
 	$(MAKE) -C kernel clean
 
 .PHONY: distclean
 distclean: clean
+	rm -r $(SYSROOT)/boot/limine/
 	rm -rf $(LIMINE) $(OVMF)
