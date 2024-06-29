@@ -8,6 +8,5 @@ tools/src
 tools/path
 tools/autotools
 kernel/build
-sysroot/boot/limine
-sysroot/boot/moss
+sysroot/boot/*
 sysroot/EFI

@@ -41,7 +41,7 @@ mosslibc:
 	$(MAKE) -C mosslibc
 
 $(IMAGE_NAME).iso: $(LIMINE) kernel
-	./tools/build-iso.sh $(IMAGE_NAME)
+	./tools/build-iso.sh
 
 # $(IMAGE_NAME).hdd: $(LIMINE) kernel
 # 	rm -f $(IMAGE_NAME).hdd
