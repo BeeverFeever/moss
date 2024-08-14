@@ -15,4 +15,3 @@ void console_init()
 }
 
 void putchar_(char c) { flanterm_write(ftCtx, &c, 1); }
-// void putchar_(char c) { (void)c; };

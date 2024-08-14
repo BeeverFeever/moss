@@ -5,20 +5,28 @@
 #include <utils/printf.h>
 #include <utils/ansi.h>
 
-// #define u32BitMask(size,shift) (size == 0 ? 0x00000000 : ((0xffffffff >> (32 - size)) << shift))
+#define u32BitMask(size,shift) (size == 0 ? 0x00000000 : ((0xffffffff >> (32 - size)) << shift))
+#define fbAlphaMask ()
 
-Framebuffer fb;
+// clamps including min and max
+// static void inline clamp(u32* value, u32 min, u32 max) {
+//    *value = *value < min ? min : *value;
+//    *value = *value > max ? max : *value;
+// }
+
+Framebuffer fb = {0};
 
 void fb_init() {
    if (bootloader.fb->framebuffer_count <= 0)
       // ... there is no framebuffer sooooo no printing
       panic(null);
 
-   fb.ptr = bootloader.fb->framebuffers[0]->address;
+   fb.ptr = (u32*)bootloader.fb->framebuffers[0]->address;
    fb.width = bootloader.fb->framebuffers[0]->width;
    fb.height = bootloader.fb->framebuffers[0]->height;
    fb.pitch = bootloader.fb->framebuffers[0]->pitch;
    fb.bpp = bootloader.fb->framebuffers[0]->bpp;
+   fb.Bpp = fb.bpp / 8;
    fb.red_mask_size = bootloader.fb->framebuffers[0]->red_mask_size;
    fb.red_mask_shift = bootloader.fb->framebuffers[0]->red_mask_shift;
    fb.green_mask_size = bootloader.fb->framebuffers[0]->green_mask_size;
@@ -30,33 +38,29 @@ void fb_init() {
 // IMPORTANT: This function should not be used in a massive/important loop.
 // Calculating where each itteration will slow it down considerably,
 // instead refer to fb_draw_rect for what to do.
-void fb_put_pixel(u32 x, u32 y, u8 r, u8 g, u8 b) {
-   u32 where = (x + y * fb.width) * 4;
-   fb.ptr[where] = b;
-   fb.ptr[where + 1] = g;
-   fb.ptr[where + 2] = r;
-   fb.ptr[where + 3] = 0;
+void fb_put_pixel(u32 x, u32 y, u32 col) {
+   if (x < fb.width && y < fb.height) {
+      u32 where = x + y * fb.width;
+      fb.ptr[where] = col;
+   }
 }
 
-void fb_draw_rect(u32 top, u32 bottom, u32 left, u32 right, u8 r, u8 g, u8 b) {
-   // clamp the values
-   if (top < 0) top = 0;
-   if (bottom > fb.height) bottom = fb.height;
-   if (left < 0) left = 0;
-   if (right > fb.width) right = fb.width;
+void fb_draw_rect(u32 x, u32 y, u32 width, u32 height, u32 col) {
+   // cases where we can't draw anything so just return
+   // if (y > fb.height || x > fb.width) return;
+   // if (width > fb.width || height > fb.height) return;
 
-   u32 where = (left + top * fb.width) * 4;
-   printf_("%d\n", where);
-   for (Usize i = top; i < bottom; i++) {
-      for (Usize j = left; j < right; j++) {
-         // tbh idk why it has to go bgra, is it because of endianness?
-         // if someone sees this and knows please tell me
-         fb.ptr[where + j * 4] = b;
-         fb.ptr[where + j * 4 + 1] = g;
-         fb.ptr[where + j * 4 + 2] = r;
-         fb.ptr[where + j * 4 + 3] = 0;
+   if (y < 0) y = 0;
+   if (x < 0) x = 0;
+   if (x + width > fb.width) width = fb.width - x;
+   if (y + height > fb.height) height = fb.height - y;
+
+   u32 offset = x + y * fb.width;
+   for (Size row = y; row < height; row++) {
+      for (Size column = x; column < width + x; column++) {
+         fb.ptr[offset + column] = col;
       }
-      where += fb.pitch;
+      offset += fb.width;
    }
 }
 

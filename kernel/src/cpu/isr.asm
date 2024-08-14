@@ -1,5 +1,7 @@
 bits 64
 
+extern interrupt_handler
+
 common_interrupt_handler:
    push rax
    push rcx
@@ -18,7 +20,6 @@ common_interrupt_handler:
    push r14
    push r15
 
-   extern interrupt_handler
    call interrupt_handler
 
    pop rax

@@ -14,7 +14,7 @@ all: $(IMAGE_NAME).iso
 
 .PHONY: run-uefi
 run-uefi: $(OVMF) $(IMAGE_NAME).iso
-	qemu-system-x86_64 -M q35 -m 2G -bios $(OVMF)/OVMF.fd -cdrom $(IMAGE_NAME).iso -monitor stdio -enable-kvm -vga std
+	qemu-system-x86_64 -M q35 -m 2G -bios $(OVMF)/OVMF.fd -cdrom $(IMAGE_NAME).iso -enable-kvm -serial file:serial.log
 
 # no support for hdd anymore, if it becomes useful in the future i can triffle through the old commits
 # and find the build target for it

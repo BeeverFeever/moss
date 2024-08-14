@@ -8,6 +8,7 @@ typedef struct {
    u32 width;
    u32 height;
    u16 bpp;
+   u16 Bpp;
    u32 pitch;
    u32 red_mask_size; 
    u32 red_mask_shift;
@@ -20,8 +21,9 @@ typedef struct {
 extern Framebuffer fb;
 
 void fb_init(); 
-void fb_put_pixel(u32 x, u32 y, u8 r, u8 g, u8 b);
-void fb_draw_rect(u32 top, u32 bottom, u32 left, u32 right, u8 r, u8 g, u8 b);
+void fb_put_pixel(u32 x, u32 y, u32 col);
+void fb_draw_rect(u32 x, u32 y, u32 width, u32 height, u32 col);
+
 // void fb_mode_debug(u32 mode);
 // void fb_debug();
 

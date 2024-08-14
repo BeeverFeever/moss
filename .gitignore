@@ -10,3 +10,4 @@ tools/autotools
 kernel/build
 sysroot/boot/*
 sysroot/EFI
+serial.log

@@ -25,10 +25,10 @@
 
 #define PIC_EOI		0x20		/* End-of-interrupt command code */
 
-void picSendEOI(u8 irq);
-void picRemap(u32 offset1, u32 offset2);
+void pic_send_EOI(u8 irq);
+void pic_remap(u32 offset1, u32 offset2);
+void pic_clear_IRQ_mask(u8 IRQline);
+void pic_set_IRQ_mask(u8 IRQline);
 void pic_disable(void);
-void picClearIRQMask(u8 IRQline);
-void picSetIRQMask(u8 IRQline);
 
 #endif // MOSS_KERN_PIC_H
